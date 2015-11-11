@@ -3,7 +3,6 @@
 #include <memory>
 #include <algorithm>
 #include <functional>
-#include <sstream>
 #include <thread>
 #include <future>
 
@@ -11,25 +10,24 @@
 
 #include "lx/ulog.h"
 
-#include "lx/xcolor.h"
+#include "lx/color.h"
+
+#define	LOG_FROM_ASYNC		0
 
 using namespace std;
 using namespace	LX;
 
-// hash log id
-#define CLIENT_LOG_MACRO(arg)	arg = #arg##_log
-
-enum ImpLogLevel : LogLevel
+enum
 {
-	CLIENT_LOG_MACRO(APP_INIT),
-	CLIENT_LOG_MACRO(USER_CMD),
-	CLIENT_LOG_MACRO(USER1),
-	CLIENT_LOG_MACRO(USER2),
-	CLIENT_LOG_MACRO(USER3),
-};	
+	MENU_ID_QUIT = wxID_EXIT,
+	
+	BUTTON_ID_1,
+	BUTTON_ID_2,
+	BUTTON_ID_3,
+	BUTTON_ID_QUIT,
+};
 
-#undef CLIENT_LOG_MACRO
-
+// log level (or ID) definition
 struct log_def
 {
 	log_def(const string &label, const RGB_COLOR &clr)
@@ -41,14 +39,45 @@ struct log_def
 	
 	const string	m_Label;
 	const RGB_COLOR	m_Color;
+	// could also store hash but is just as well recomputed
 };
+
+// log event entry (storage for batch processing)
+struct log_evt
+{
+	log_evt(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const int thread_index)
+		: m_Stamp(stamp_ms), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
+	{
+	}
+	
+	const timestamp_t	m_Stamp;
+	const LogLevel		m_Lvl;
+	const string		m_Msg;
+	const int		m_Thread;
+};
+
+//---- declare log levels by hashing them -------------------------------------
+
+#define CLIENT_LOG_MACRO(arg)	arg = #arg##_log
+
+enum ImpLogLevel : LogLevel
+{
+	CLIENT_LOG_MACRO(APP_INIT),
+	CLIENT_LOG_MACRO(UI_CMD),
+	CLIENT_LOG_MACRO(USER1),
+	CLIENT_LOG_MACRO(USER2),
+	CLIENT_LOG_MACRO(USER3),
+};	
+#undef CLIENT_LOG_MACRO
+
+//---- Log level definition (label, color) ------------------------------------
 
 #define LOG_DEF_MACRO(t, clr)	{t, log_def(#t, RGB_COLOR::clr)}
 
 static const
 unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 {
-	// common / built-in
+	// core / built-in log levels
 	LOG_DEF_MACRO(FATAL,		NIGHT_RED),
 	LOG_DEF_MACRO(ERROR,		RED),
 	LOG_DEF_MACRO(EXCEPTION,	BLUE),
@@ -56,40 +85,14 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 	LOG_DEF_MACRO(MSG,		BLACK),
 	LOG_DEF_MACRO(DTOR,		BROWN),
 	
-	// client
+	// client log levels
 	LOG_DEF_MACRO(APP_INIT,		NIGHT_BLUE),
-	LOG_DEF_MACRO(USER_CMD,		GREEN),
+	LOG_DEF_MACRO(UI_CMD,		GREEN),
 	LOG_DEF_MACRO(USER1,		PURPLE),
 	LOG_DEF_MACRO(USER2,		BLUE),
 	LOG_DEF_MACRO(USER3,		CYAN),
 };
-
 #undef LOG_DEF_MACRO
-
-enum
-{
-	Menu_Quit = wxID_EXIT,
-	
-	Butt_1,
-	Butt_2,
-	Butt_3,
-	Butt_quit,
-	
-	Checklistbox_1,
-};
-
-struct log_struct
-{
-	log_struct(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const int thread_index)
-		: m_Stamp(stamp_ms), m_Lvl(level), m_Msg(msg), m_ThreadIndex(thread_index)
-	{
-	}
-	
-	const timestamp_t	m_Stamp;
-	const LogLevel		m_Lvl;
-	const string		m_Msg;
-	const int		m_ThreadIndex;
-};
 
 //---- wx Frame ---------------------------------------------------------------
 
@@ -101,11 +104,11 @@ public:
 		m_ThreadID(this_thread::get_id()),
 		m_RootLog(root_log),
 		m_TextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxTE_NOHIDESEL | wxTE_DONTWRAP),
-		m_CheckListBox(this, Checklistbox_1, wxDefaultPosition, wxDefaultSize),
-		m_Button1(this, Butt_1, "user 1", wxDefaultPosition, wxDefaultSize),
-		m_Button2(this, Butt_2, "user 2", wxDefaultPosition, wxDefaultSize),
-		m_Button3(this, Butt_3, "user 3", wxDefaultPosition, wxDefaultSize),
-		m_QuitButton(this, Butt_quit, "Quit", wxDefaultPosition, wxDefaultSize)
+		m_CheckListBox(this, -1),
+		m_Button1(this, BUTTON_ID_1, "user 1"),
+		m_Button2(this, BUTTON_ID_2, "user 2"),
+		m_Button3(this, BUTTON_ID_3, "user 3"),
+		m_QuitButton(this, BUTTON_ID_QUIT, "Quit")
 	{
 		
 		CreateStatusBar(1);
@@ -158,24 +161,24 @@ public:
 		
 		SetSizer(top_v_sizer);
 		
-		SetStatusText("Welcome to uLog example!");
+		SetStatusText("Welcome to uLog's freeform example!");
 		
 		Show();
 		Centre();
 		
 		m_RootLog.Connect(this);
 		
-		uMsg("vanilla in ui thread");
-	}
-	
-	virtual ~MyFrame()
-	{
-		uLog(DTOR, "MyFrame::DTOR");
+		uMsg("vanilla log from ui thread");
 	}
 	
 	void	OnClose(wxCloseEvent &e)
 	{
-		uLog(USER_CMD, "MyFrame::OnClose()");
+		#if LOG_FROM_ASYNC
+			// manually disconnect self (ui log receiver) so file logger continues
+			DisconnectSelfSlot();
+		#endif
+		
+		uLog(UI_CMD, "MyFrame::OnClose()");
 		
 		e.Skip();
 	}
@@ -183,30 +186,38 @@ public:
 // user action
 	void	OnQuit(wxCommandEvent &e)
 	{
-		uLog(USER_CMD, "MyFrame::OnQuit()");
+		uLog(UI_CMD, "MyFrame::OnQuit()");
 		
 		Close(true);
 	}
 	
 	void	OnButton1(wxCommandEvent &e)
 	{
-		uLog(USER_CMD, "MyFrame::OnButton1()");
+		uLog(UI_CMD, "MyFrame::OnButton1()");
 		
 		uLog(USER1, "user1 id = %d", e.GetId());
 	}
 	
 	void	OnButton2(wxCommandEvent &e)
 	{
-		uLog(USER_CMD, "MyFrame::OnButton2()");
+		uLog(UI_CMD, "MyFrame::OnButton2()");
 
-		m_Fut = async(std::launch::async, []{this_thread::sleep_for(200ms);uLog(USER2, "user2 in async task");});
+		#if LOG_FROM_ASYNC
+			m_Fut = async(std::launch::async, []{this_thread::sleep_for(200ms);uLog(USER2, "user2 in async task");});
+		#else
+			uLog(USER2, "user2 from default thread");
+		#endif
 	}
 	
 	void	OnButton3(wxCommandEvent &e)
 	{
-		uLog(USER_CMD, "MyFrame::OnButton3()");
+		uLog(UI_CMD, "MyFrame::OnButton3()");
 
-		m_Fut = async(std::launch::async, []{this_thread::sleep_for(5s);uLog(USER3, "user3 in async nap");});
+		#if LOG_FROM_ASYNC
+			m_Fut = async(std::launch::async, []{this_thread::sleep_for(3s);uLog(USER3, "user3 in async nap");});
+		#else
+			uLog(USER3, "user3 from vanilla");
+		#endif
 	}
 	
 	void	OnCheckbox(wxCommandEvent &e)
@@ -215,7 +226,7 @@ public:
 		const size_t	ind = e.GetInt();
 		const bool	f = m_CheckListBox.IsChecked(ind);
 		
-		// uMsg("OnCheckbox(ind = %zu, %S = %c)", ind, s, f);
+		uLog(UI_CMD, "OnCheckbox(ind = %zu, %S = %c)", ind, s, f);
 		
 		const LogLevel	lvl = log_hash(s.c_str());
 		
@@ -229,7 +240,7 @@ private:
 	void	InitMenus(void)
 	{
 		wxMenu *fileMenu = new wxMenu;
-		fileMenu->Append(Menu_Quit, "Exit", "Quit this program");
+		fileMenu->Append(MENU_ID_QUIT, "Exit", "Quit this program");
 		
 		wxMenuBar *menuBar = new wxMenuBar();
 		menuBar->Append(fileMenu, "File");
@@ -238,6 +249,8 @@ private:
 	
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
 	{
+		assert(!IsBeingDeleted());
+		
 		unique_lock<mutex>	lock(m_ThreadMutex);
 		
 		const auto	tid = this_thread::get_id();
@@ -246,27 +259,29 @@ private:
 			
 		const int	thread_index = m_ThreadIndexMap.at(tid);
 			
-		m_LogEntries.emplace_back(stamp, level, msg, thread_index);
+		m_LogEvents.emplace_back(stamp, level, msg, thread_index);
 			
 		CallAfter(&MyFrame::DequeueLogs);
 	}
 	
 	void	DequeueLogs(void)
 	{
+		assert(!IsBeingDeleted());
+		
 		unique_lock<mutex>	lock(m_ThreadMutex);
 		
-		for (const auto &e : m_LogEntries)
+		for (const auto &e : m_LogEvents)
 		{
-			const string	thread_s = (e.m_ThreadIndex == 0) ? "" : xsprintf(" THR[%1d]", e.m_ThreadIndex);
+			const string	thread_s = (e.m_Thread > 0) ? xsprintf(" THR[%1d]", e.m_Thread) : "";
 			const string	s = xsprintf("%s%s %s\n", xtimestamp_str(e.m_Stamp), thread_s, e.m_Msg);
 			
 			const RGB_COLOR	clr = s_LogLevelDefMap.count(e.m_Lvl) ? s_LogLevelDefMap.at(e.m_Lvl).m_Color : RGB_COLOR::BLACK;
-			m_TextCtrl.SetDefaultStyle(wxTextAttr(Color(clr).ToWxColor()));
+			m_TextCtrl.SetDefaultStyle(wxTextAttr(*Color(clr).ToWxColor()));
 			
 			m_TextCtrl.AppendText(s);
 		}
 		
-		m_LogEntries.clear();
+		m_LogEvents.clear();
 	}
 	
 	const thread::id		m_ThreadID;
@@ -275,10 +290,12 @@ private:
 	wxCheckListBox			m_CheckListBox;
 	wxButton			m_Button1, m_Button2, m_Button3, m_QuitButton;
 	
-	future<void>			m_Fut;
+	#if LOG_FROM_ASYNC
+		future<void>		m_Fut;
+	#endif
 	
 	mutable mutex			m_ThreadMutex;
-	vector<log_struct>		m_LogEntries;
+	vector<log_evt>			m_LogEvents;
 	unordered_map<thread::id, int>	m_ThreadIndexMap;
 	
 	DECLARE_EVENT_TABLE()
@@ -288,14 +305,14 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	
 	EVT_CLOSE(					MyFrame::OnClose)
 	
-	EVT_MENU(		Menu_Quit,		MyFrame::OnQuit)
+	EVT_MENU(		MENU_ID_QUIT,		MyFrame::OnQuit)
 	
-	EVT_BUTTON(		Butt_1,			MyFrame::OnButton1)
-	EVT_BUTTON(		Butt_2,			MyFrame::OnButton2)
-	EVT_BUTTON(		Butt_3,			MyFrame::OnButton3)
-	EVT_BUTTON(		Butt_quit,		MyFrame::OnQuit)
+	EVT_BUTTON(		BUTTON_ID_1,		MyFrame::OnButton1)
+	EVT_BUTTON(		BUTTON_ID_2,		MyFrame::OnButton2)
+	EVT_BUTTON(		BUTTON_ID_3,		MyFrame::OnButton3)
+	EVT_BUTTON(		BUTTON_ID_QUIT,		MyFrame::OnQuit)
 	
-	EVT_CHECKLISTBOX(	Checklistbox_1,		MyFrame::OnCheckbox)
+	EVT_CHECKLISTBOX(	-1,		MyFrame::OnCheckbox)
 	
 END_EVENT_TABLE()
 
@@ -320,7 +337,7 @@ public:
 	{
 		uLog(MSG, "MyApp::OnInit()");
 		
-		if (!wxApp::OnInit())        return false;
+		if (!wxApp::OnInit())        return false;		// error
 		
 		m_TopFrame = new MyFrame("logger wx", m_RootLog);
 		
@@ -357,10 +374,10 @@ int	main(int argc, char* argv[])
 	
 	// s_LogImp.EnableLevels({DTOR});
 	s_LogImp.EnableLevels({APP_INIT});
-	s_LogImp.EnableLevels({USER_CMD});
+	s_LogImp.EnableLevels({UI_CMD});
 	s_LogImp.EnableLevels({USER1, USER2, USER3});
 		
-	/*unique_ptr<ddtLog>*/auto	file_log(rootLog::MakeLogType(LOG_TYPE_T::STD_FILE, "wx_logger.log"));
+	/*unique_ptr<ddtLog>*/auto	file_log(rootLog::MakeLogType(LOG_TYPE_T::STD_FILE, "freeform.log"));
 	s_LogImp.Connect(file_log);
 		
 	uLog(APP_INIT, "main() file log created, creating wx app");
