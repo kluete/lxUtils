@@ -38,11 +38,6 @@
 typedef	std::conditional<(sizeof(void*) == 4), std::uint32_t, std::uint64_t>::type DDT_PTR_INT;
 const int	DDT_PTR_NYBBLES = sizeof(void*) * 2;
 
-// BROAD detection here cause we must instantiate template functions
-// must use LX_ prefix in Xcode!
-// #if (JUCE_LINUX || JUCE_WINDOWS || JUCE_MAC || LX_JUCE_XCODE)
-// #endif
-
 #include "lx/xstring.h"
 
 using namespace std;
@@ -250,14 +245,17 @@ void	LX::xdump(const thread::id &thread_id, outstream &ss)
 	ss << hex << thread_id;
 }
 
+#if 0
 //---- juce::String specialization --------------------------------------------
 
-#if LX_JUCE_STRING
+#if LX_JUCE
 
 	void	LX::xdump(const juce::String &s, outstream &ss)
 	{
 		ss << s.toStdString();
 	}
+#endif
+
 #endif
 
 // nada mas

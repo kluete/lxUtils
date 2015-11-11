@@ -25,8 +25,7 @@
         <IncludePath Value="../inc"/>
         <IncludePath Value="$(LXUTILS)/inc"/>
         <IncludePath Value="$(LXUTILS_DEV)/inc"/>
-        <Preprocessor Value="LX_WX_GEOMETRY=1"/>
-        <Preprocessor Value="LX_WX_STRING=1"/>
+        <Preprocessor Value="LX_WX=1"/>
       </Compiler>
       <Linker Options="">
         <LibraryPath Value="."/>

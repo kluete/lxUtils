@@ -12,11 +12,11 @@
 #include <stdexcept>
 #include <type_traits>
 
-#if LX_WX_STRING
+#if LX_WX
 	#include "wx/string.h"
 #endif
 
-#if LX_JUCE_STRING
+#if LX_JUCE
 	#include "JuceHeader.h"
 #endif
 	
@@ -48,14 +48,12 @@ typename std::enable_if<!Has_ToStdStringMethod<_T>::Has,void>::type			// if _T i
 	ss << val;
 }
 
-// #if LX_WX_STRING
-	template<typename _T>
-	typename std::enable_if<Has_ToStdStringMethod<_T>::Has,void>::type		// if _T is wxString
-		xdump(const _T &val, outstream &ss)
-	{
-		ss << val.ToStdString();
-	}
-// #endif
+template<typename _T>
+typename std::enable_if<Has_ToStdStringMethod<_T>::Has,void>::type			// if _T is wxString
+	xdump(const _T &val, outstream &ss)
+{
+	ss << val.ToStdString();
+}
 
 // workaround specializations
 void	xdump(const std::int8_t &i8, outstream &ss);
@@ -63,8 +61,11 @@ void	xdump(const std::uint8_t &ui8, outstream &ss);
 void	xdump(const void* p, outstream &ss);
 void	xdump(const std::thread::id &thread_id, outstream &ss);
 
-#if LX_JUCE_STRING
-	void	xdump(const juce::String &val, outstream &ss);
+#if LX_JUCE
+	void	xdump(const juce::String &val, outstream &ss)
+	{
+		ss << s.toStdString();
+	}
 #endif
 
 // full vararg sprintf() re-implementation
@@ -87,13 +88,13 @@ std::string	xsprintf(const char *s, const _T &val, Args&& ... args)
 	const bool	number_f = int_f || float_f;
 	const bool	ptr_f = true;	// (is_pointer<_T>()) || (is_member_object_pointer<_T>()) || (is_member_function_pointer<_T>()) || (is_pointer<void>());
 	
-	#if LX_WX_STRING
+	#if LX_WX
 		const bool	wxstring_f = is_same<_T, wxString>();
 	#else
 		const bool	wxstring_f = false;
 	#endif
 	
-	#if LX_JUCE_STRING
+	#if LX_JUCE
 		const bool	juce_string_f = is_same<_T, juce::String>();
 	#else
 		const bool	juce_string_f = false;
@@ -175,7 +176,7 @@ std::string	xsprintf(const char *s, const _T &val, Args&& ... args)
 			break;
 			
 		default:
-		{	// LX_ERROR - unknown format flag
+		{	// ERROR - unknown format flag
 			throw runtime_error("unhandled xsprintf() format flag");
 		}	break;
 	}
