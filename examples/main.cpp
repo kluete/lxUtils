@@ -1,12 +1,11 @@
 
 #include <cassert>
 #include <memory>
-#include <tuple>
-#include <utility>
+#include <algorithm>
 #include <functional>
 #include <sstream>
 #include <thread>
-#include <deque>
+#include <future>
 
 #include "wx/wx.h"
 
@@ -97,14 +96,15 @@ struct log_struct
 class MyFrame : public wxFrame, public LogSlot
 {
 public:
-	MyFrame(const wxString &title)
+	MyFrame(const wxString &title, rootLog &root_log)
 		: wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)),
 		m_ThreadID(this_thread::get_id()),
+		m_RootLog(root_log),
 		m_TextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxTE_NOHIDESEL | wxTE_DONTWRAP),
 		m_CheckListBox(this, Checklistbox_1, wxDefaultPosition, wxDefaultSize),
-		m_Button1(this, Butt_1, "button1", wxDefaultPosition, wxDefaultSize),
-		m_Button2(this, Butt_2, "button2", wxDefaultPosition, wxDefaultSize),
-		m_Button3(this, Butt_3, "button3", wxDefaultPosition, wxDefaultSize),
+		m_Button1(this, Butt_1, "user 1", wxDefaultPosition, wxDefaultSize),
+		m_Button2(this, Butt_2, "user 2", wxDefaultPosition, wxDefaultSize),
+		m_Button3(this, Butt_3, "user 3", wxDefaultPosition, wxDefaultSize),
 		m_QuitButton(this, Butt_quit, "Quit", wxDefaultPosition, wxDefaultSize)
 	{
 		
@@ -128,7 +128,14 @@ public:
 
 		for (const string &s : labels)
 		{
+			const LogLevel	lvl = log_hash(s.c_str());
+			
+			const bool	f = root_log.IsLevelEnabled(lvl);
+			const size_t	index = m_CheckListBox.GetCount();
+			
 			m_CheckListBox.Append(wxString{s});
+			
+			m_CheckListBox.Check(index, f);
 		}
 	
 		wxBoxSizer	*text_n_check_h_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -155,6 +162,10 @@ public:
 		
 		Show();
 		Centre();
+		
+		m_RootLog.Connect(this);
+		
+		uMsg("vanilla in ui thread");
 	}
 	
 	virtual ~MyFrame()
@@ -188,22 +199,27 @@ public:
 	{
 		uLog(USER_CMD, "MyFrame::OnButton2()");
 
-		uLog(USER2, "user2 id = %d", e.GetId());
+		m_Fut = async(std::launch::async, []{this_thread::sleep_for(200ms);uLog(USER2, "user2 in async task");});
 	}
 	
 	void	OnButton3(wxCommandEvent &e)
 	{
 		uLog(USER_CMD, "MyFrame::OnButton3()");
 
-		uLog(USER3, "user3 id = %d", e.GetId());
+		m_Fut = async(std::launch::async, []{this_thread::sleep_for(5s);uLog(USER3, "user3 in async nap");});
 	}
 	
 	void	OnCheckbox(wxCommandEvent &e)
 	{
-		const int	ind = e.GetInt();
 		const string	s = e.GetString().ToStdString();
+		const size_t	ind = e.GetInt();
+		const bool	f = m_CheckListBox.IsChecked(ind);
 		
-		uMsg("OnCheckbox(ind = %d, %S)", ind, s);
+		// uMsg("OnCheckbox(ind = %zu, %S = %c)", ind, s, f);
+		
+		const LogLevel	lvl = log_hash(s.c_str());
+		
+		m_RootLog.ToggleLevel(lvl, f);
 		
 		e.Skip();
 	}
@@ -225,63 +241,44 @@ private:
 		unique_lock<mutex>	lock(m_ThreadMutex);
 		
 		const auto	tid = this_thread::get_id();
-		if (tid != m_ThreadID)
-		{
-			// don't log from other thread or wx BOMBS!
-			if (!m_ThreadIndexMap.count(tid))	m_ThreadIndexMap.emplace(tid, m_ThreadIndexMap.size() + 1);
+		
+		if (!m_ThreadIndexMap.count(tid))	m_ThreadIndexMap.emplace(tid, m_ThreadIndexMap.size());
 			
-			const int	thread_index = m_ThreadIndexMap.at(tid);
+		const int	thread_index = m_ThreadIndexMap.at(tid);
 			
-			m_ThreadLogs.emplace_back(stamp, level, msg, thread_index);
+		m_LogEntries.emplace_back(stamp, level, msg, thread_index);
 			
-			CallAfter(&MyFrame::DequeueLogs);
-			
-			return;
-		}
-		
-		DequeueLogs();
-		
-		const wxString	s(xsprintf("%s %s\n", xtimestamp_str(stamp), msg));
-		
-		SetLevelColor(level);
-		
-		m_TextCtrl.AppendText(wxString{s});
-		
-		// (don't log from inside logger!)
+		CallAfter(&MyFrame::DequeueLogs);
 	}
 	
 	void	DequeueLogs(void)
 	{
-		for (const auto &e : m_ThreadLogs)
+		unique_lock<mutex>	lock(m_ThreadMutex);
+		
+		for (const auto &e : m_LogEntries)
 		{
-			SetLevelColor(e.m_Lvl);
+			const string	thread_s = (e.m_ThreadIndex == 0) ? "" : xsprintf(" THR[%1d]", e.m_ThreadIndex);
+			const string	s = xsprintf("%s%s %s\n", xtimestamp_str(e.m_Stamp), thread_s, e.m_Msg);
 			
-			const string	s = xsprintf("%s THR[%1d] %s\n", xtimestamp_str(e.m_Stamp), e.m_ThreadIndex, e.m_Msg);
+			const RGB_COLOR	clr = s_LogLevelDefMap.count(e.m_Lvl) ? s_LogLevelDefMap.at(e.m_Lvl).m_Color : RGB_COLOR::BLACK;
+			m_TextCtrl.SetDefaultStyle(wxTextAttr(Color(clr).ToWxColor()));
 			
 			m_TextCtrl.AppendText(s);
 		}
 		
-		m_ThreadLogs.clear();
-	}
-	
-	void	SetLevelColor(const LogLevel lvl)
-	{
-		const RGB_COLOR	clr = s_LogLevelDefMap.count(lvl) ? s_LogLevelDefMap.at(lvl).m_Color : RGB_COLOR::BLACK;
-	
-		const wxColor	wx_clr = Color(clr).ToWxColor();
-	
-		m_TextCtrl.SetDefaultStyle(wxTextAttr(wx_clr));
+		m_LogEntries.clear();
 	}
 	
 	const thread::id		m_ThreadID;
+	rootLog				&m_RootLog;
 	wxTextCtrl			m_TextCtrl;
 	wxCheckListBox			m_CheckListBox;
 	wxButton			m_Button1, m_Button2, m_Button3, m_QuitButton;
 	
-	// wxPanel			m_Panel;
+	future<void>			m_Fut;
 	
 	mutable mutex			m_ThreadMutex;
-	vector<log_struct>		m_ThreadLogs;
+	vector<log_struct>		m_LogEntries;
 	unordered_map<thread::id, int>	m_ThreadIndexMap;
 	
 	DECLARE_EVENT_TABLE()
@@ -325,9 +322,7 @@ public:
 		
 		if (!wxApp::OnInit())        return false;
 		
-		m_TopFrame = new MyFrame("logger wx");
-		
-		m_RootLog.Connect(m_TopFrame);
+		m_TopFrame = new MyFrame("logger wx", m_RootLog);
 		
 		return true;
 	}
