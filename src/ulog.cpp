@@ -68,7 +68,7 @@ void	LogSlot::RemoveSignal(void)
 	m_OrgSignal = nil;
 }
 
-void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const uint32_t level, const string &msg) 
+void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const string &msg) 
 {
 	if (!m_OrgSignal)	return;		// was already disconnected
 	
@@ -133,7 +133,7 @@ void	LogSignal::DisconnectAll(void)
 
 	// triggers all connected slots
 
-void	LogSignal::EmitAll(const timestamp_t stamp, const uint32_t level, const string &msg) const
+void	LogSignal::EmitAll(const timestamp_t stamp, const LogLevel level, const string &msg) const
 {
 	// need MUTEX ? if re-logs from a signal would lock up
 	
@@ -186,7 +186,7 @@ rootLog*rootLog::GetSingleton(void)
 //---- Has Log Level LOW-LEVEL ------------------------------------------------
 
 // static
-bool	rootLog::HasLogLevel_LL(const uint32_t lvl)
+bool	rootLog::HasLogLevel_LL(const LogLevel lvl)
 {
 	if (!s_rootLog)		return false;		// not yet initialized or already exited
 	
@@ -197,7 +197,7 @@ bool	rootLog::HasLogLevel_LL(const uint32_t lvl)
 //---- Do ULog LOW-LEVEL ------------------------------------------------------
 
 // static
-void	rootLog::DoULog_LL(const uint32_t lvl, const string &msg)
+void	rootLog::DoULog_LL(const LogLevel lvl, const string &msg)
 {
 	assert(s_rootLog);
 	
@@ -206,7 +206,7 @@ void	rootLog::DoULog_LL(const uint32_t lvl, const string &msg)
 
 //---- Do ULog ----------------------------------------------------------------
 
-void	rootLog::DoULog(const uint32_t lvl, const string &msg)
+void	rootLog::DoULog(const LogLevel lvl, const string &msg)
 {
 	if (!IsLevelEnabled(lvl))		return;		// level not enabled
 	
@@ -238,7 +238,7 @@ rootLog&	rootLog::ClearAllLevels(void)
 
 //---- Enable Log Levels ------------------------------------------------------
 
-rootLog&	rootLog::EnableLevels(const unordered_set<uint32_t> &levels)
+rootLog&	rootLog::EnableLevels(const unordered_set<LogLevel> &levels)
 {
 	m_EnabledLevelSet.insert(levels.begin(), levels.end());
 	
@@ -247,7 +247,7 @@ rootLog&	rootLog::EnableLevels(const unordered_set<uint32_t> &levels)
 
 //---- Disable Log Levels -----------------------------------------------------
 
-rootLog&	rootLog::DisableLevels(const unordered_set<uint32_t> &levels)
+rootLog&	rootLog::DisableLevels(const unordered_set<LogLevel> &levels)
 {
 	// m_EnabledLevelSet.erase(levels.begin(), levels.end());		// doesn't work?
 	for (const auto lvl : levels)
@@ -273,7 +273,7 @@ public:
 	virtual ~FileLog()	{}
 	
 	// LogSlot IMP
-	void	LogAtLevel(const timestamp_t stamp, const uint32_t level, const string &msg) override
+	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
 	{
 		unique_lock<mutex>	locker(m_Mutex);
 		

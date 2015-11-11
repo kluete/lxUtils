@@ -48,6 +48,8 @@ LOG_HASH_T operator "" _log(const char *s, size_t n)
 	return log_hash(s);
 }
 
+using LogLevel = LOG_HASH_T;
+
 //---- Log Slot ---------------------------------------------------------------
 
 class LogSlot
@@ -60,7 +62,7 @@ public:
 
 	void	DisconnectSelfSlot(void);
 
-	virtual void	LogAtLevel(const timestamp_t stamp_ms, const uint32_t level, const string &msg) = 0;
+	virtual void	LogAtLevel(const timestamp_t stamp_ms, const LogLevel level, const string &msg) = 0;
 	virtual void	ClearLog(void)		{}
 	
 	bool		IsMainThread(void) const;
@@ -68,7 +70,7 @@ public:
 private:
 
 	// accessed by signal
-	void	LogAtLevel_LL(const timestamp_t stamp_ms, const uint32_t level, const string &msg);
+	void	LogAtLevel_LL(const timestamp_t stamp_ms, const LogLevel level, const string &msg);
 	
 	void	SetSignal(LogSignal *sig);
 	void	RemoveSignal(void);
@@ -93,7 +95,7 @@ public:
 	void	Connect(LogSlot *slot);
 	void	Disconnect(LogSlot *slot);
 
-	void	EmitAll(const timestamp_t stamp_us, const uint32_t level, const string &msg) const;
+	void	EmitAll(const timestamp_t stamp_us, const LogLevel level, const string &msg) const;
 	void	ClearLogAll(void);
 	
 private:
@@ -120,15 +122,15 @@ public:
 	rootLog();
 	virtual ~rootLog();
 
-	void	DoULog(const uint32_t lvl, const string &msg);
+	void	DoULog(const LogLevel lvl, const string &msg);
 	
 	// functions
 	rootLog&	ClearAllLevels(void);
-	rootLog&	EnableLevels(const unordered_set<uint32_t> &enable_set);
-	rootLog&	DisableLevels(const unordered_set<uint32_t> &disable_set);
+	rootLog&	EnableLevels(const unordered_set<LogLevel> &enable_set);
+	rootLog&	DisableLevels(const unordered_set<LogLevel> &disable_set);
 	
 	inline
-	bool	IsLevelEnabled(const uint32_t lvl) const
+	bool	IsLevelEnabled(const LogLevel lvl) const
 	{	return m_EnabledLevelSet.count(lvl);
 	}
 	
@@ -138,17 +140,17 @@ public:
 		return EnableLevels({log_hash(level_s)});
 	}
 	
-	unordered_set<uint32_t>	GetEnabledLevels(void) const	{return m_EnabledLevelSet;}
+	unordered_set<LogLevel>	GetEnabledLevels(void) const	{return m_EnabledLevelSet;}
 	
 	static rootLog*	GetSingleton(void);
-	static bool	HasLogLevel_LL(const uint32_t lvl);
-	static void	DoULog_LL(const uint32_t lvl, const string &msg);
+	static bool	HasLogLevel_LL(const LogLevel lvl);
+	static void	DoULog_LL(const LogLevel lvl, const string &msg);
 	
 	static LogSlot*	MakeLogType(const LOG_TYPE_T log_t, const string &fn);
 	
 private:
 
-	unordered_set<uint32_t>		m_EnabledLevelSet;
+	unordered_set<LogLevel>		m_EnabledLevelSet;
 	mutable timestamp_t		m_LastTimeStamp;
 	
 	static rootLog			*s_rootLog;
@@ -171,7 +173,7 @@ enum BASE_LOG_T : LOG_HASH_T				// should use enum class ?
 } // namespace LX
 
 template<typename ... Args>
-void	uLog(const uint32_t lvl, const char *fmt, Args&& ... args)
+void	uLog(const LX::LogLevel lvl, const char *fmt, Args&& ... args)
 {
 	try
 	{
@@ -192,7 +194,7 @@ void	uLog(const uint32_t lvl, const char *fmt, Args&& ... args)
 // overloads
 
 template<typename ... Args>
-void	uLog(const uint32_t lvl, const std::string &fmt, Args&& ... args)
+void	uLog(const LX::LogLevel lvl, const std::string &fmt, Args&& ... args)
 {
 	uLog(lvl, fmt.c_str(), std::forward<Args>(args) ...);
 }
