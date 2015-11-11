@@ -62,9 +62,10 @@ void	xdump(const void* p, outstream &ss);
 void	xdump(const std::thread::id &thread_id, outstream &ss);
 
 #if LX_JUCE
+	inline
 	void	xdump(const juce::String &val, outstream &ss)
 	{
-		ss << s.toStdString();
+		ss << val.toStdString();
 	}
 #endif
 

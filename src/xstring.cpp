@@ -35,8 +35,8 @@
 #include "lx/xutils.h"
 
 // compile-time selection of int type with size of pointer
-typedef	std::conditional<(sizeof(void*) == 4), std::uint32_t, std::uint64_t>::type DDT_PTR_INT;
-const int	DDT_PTR_NYBBLES = sizeof(void*) * 2;
+typedef	std::conditional<(sizeof(void*) == 4), std::uint32_t, std::uint64_t>::type PTR_INT_EQUIV;
+const int	PTR_NUM_NYBBLES = sizeof(void*) * 2;
 
 #include "lx/xstring.h"
 
@@ -214,28 +214,13 @@ void	LX::xdump(const uint8_t& u8, outstream &ss)
 
 void	LX::xdump(const void* p, outstream &ss)
 {
-	static_assert(sizeof(p) == sizeof(DDT_PTR_INT), "unhandled pointer size");
+	static_assert(sizeof(p) == sizeof(PTR_INT_EQUIV), "unhandled pointer size");
 	
 	// ss << noshowbase << setw(16) << setfill('0') << p;		// Linux C runtime bug: cannot disable "0x" prefix
 	
-	/*
-	// not portable across endianness
-	union p_conv
-	{
-		const void	*m_p;
-		DDT_PTR_INT	m_u;
-		
-	} uni{p};
-	
-	auto	phex = uni.m_u;
-	*/
-	
-	// doesn't compile
-	// DDT_PTR_INT	u64 = reinterpret_cast<DDT_PTR_INT>(p);
-	
-	const DDT_PTR_INT	dbytes = static_cast<const char*>(p) - static_cast<const char*>(nullptr);
+	const PTR_INT_EQUIV	dbytes = static_cast<const char*>(p) - static_cast<const char*>(nullptr);
 
-	ss << "0x" << hex << setw(DDT_PTR_NYBBLES - 4) << setfill('0') << dbytes;	
+	ss << "0x" << hex << setw(PTR_NUM_NYBBLES - 4) << setfill('0') << dbytes;	
 }
 
 //---- thread id specialization -----------------------------------------------
@@ -244,18 +229,5 @@ void	LX::xdump(const thread::id &thread_id, outstream &ss)
 {
 	ss << hex << thread_id;
 }
-
-#if 0
-//---- juce::String specialization --------------------------------------------
-
-#if LX_JUCE
-
-	void	LX::xdump(const juce::String &s, outstream &ss)
-	{
-		ss << s.toStdString();
-	}
-#endif
-
-#endif
 
 // nada mas
