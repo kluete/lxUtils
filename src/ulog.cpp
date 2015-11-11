@@ -1,37 +1,15 @@
-// ddt3 custom log
+// lx utils freeformlog
 
 #include <cassert>
 #include <algorithm>
 #include <fstream>
 #include <mutex>
-
 #include <thread>
 
 #include "lx/ulog.h"
 
-#include "lx/termLog.h"
-
 using namespace std;
 using namespace LX;
-
-//---- Terminal color Sequence ------------------------------------------------
-
-	// - format for 256 colors
-	//   TERM_PREFIX + "38;5;1m"
-
-// static
-string	LX::TermSeq(const initializer_list<TERM> &code_list)			// should be constexpr
-{	
-	string	s;
-	
-	for (auto cod : code_list)
-	{
-		if (!s.empty())		s += ";";
-		s += to_string(static_cast<int>(cod));
-	}
-	
-	return string("\x1b[") + s + "m";
-}
 
 // static
 rootLog	*rootLog::s_rootLog = nil;

@@ -1,4 +1,4 @@
-// lx utils custom/micro logger
+// lx utils freeform logger
 
 #pragma once
 
@@ -22,7 +22,6 @@ using std::string;
 using std::thread;
 using std::vector;
 using std::unordered_set;
-using std::initializer_list;
 
 using LX::timestamp_t;
 
