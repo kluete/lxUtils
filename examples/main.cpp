@@ -101,8 +101,6 @@ class MyFrame : public wxFrame, public LogSlot
 public:
 	MyFrame(const wxString &title, rootLog &root_log)
 		: wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)),
-		m_ThreadID(this_thread::get_id()),
-		m_RootLog(root_log),
 		m_TextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxTE_NOHIDESEL | wxTE_DONTWRAP),
 		m_CheckListBox(this, -1),
 		m_Button1(this, BUTTON_ID_1, "user 1"),
@@ -166,7 +164,7 @@ public:
 		Show();
 		Centre();
 		
-		m_RootLog.Connect(this);
+		root_log.Connect(this);
 		
 		uMsg("vanilla log from ui thread");
 	}
@@ -230,7 +228,10 @@ public:
 		
 		const LogLevel	lvl = log_hash(s.c_str());
 		
-		m_RootLog.ToggleLevel(lvl, f);
+		auto	*rlog_p = rootLog::GetSingleton();
+		assert(rlog_p);
+		
+		rlog_p->ToggleLevel(lvl, f);
 		
 		e.Skip();
 	}
@@ -284,8 +285,6 @@ private:
 		m_LogEvents.clear();
 	}
 	
-	const thread::id		m_ThreadID;
-	rootLog				&m_RootLog;
 	wxTextCtrl			m_TextCtrl;
 	wxCheckListBox			m_CheckListBox;
 	wxButton			m_Button1, m_Button2, m_Button3, m_QuitButton;
@@ -312,7 +311,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_BUTTON(		BUTTON_ID_3,		MyFrame::OnButton3)
 	EVT_BUTTON(		BUTTON_ID_QUIT,		MyFrame::OnQuit)
 	
-	EVT_CHECKLISTBOX(	-1,		MyFrame::OnCheckbox)
+	EVT_CHECKLISTBOX(	-1,			MyFrame::OnCheckbox)
 	
 END_EVENT_TABLE()
 
@@ -322,8 +321,8 @@ class MyApp : public wxApp
 {
 public:
 	
-	MyApp(rootLog &rlog)
-		: m_RootLog(rlog), m_TopFrame(nil)
+	MyApp()
+		: m_TopFrame(nil)
 	{	
 		uLog(MSG, "MyApp::CTOR()");
 	}
@@ -339,7 +338,10 @@ public:
 		
 		if (!wxApp::OnInit())        return false;		// error
 		
-		m_TopFrame = new MyFrame("logger wx", m_RootLog);
+		auto	*rlog_p = rootLog::GetSingleton();
+		assert(rlog_p);
+		
+		m_TopFrame = new MyFrame("logger wx", *rlog_p);
 		
 		return true;
 	}
@@ -360,7 +362,6 @@ public:
 		
 private:
 	
-	rootLog		&m_RootLog;
 	MyFrame		*m_TopFrame;		// (don't mem-manage wx resources)
 };
 
@@ -382,7 +383,7 @@ int	main(int argc, char* argv[])
 		
 	uLog(APP_INIT, "main() file log created, creating wx app");
 	
-	MyApp		*wx_app = new MyApp(s_LogImp);
+	MyApp		*wx_app = new MyApp();
 	(void)wx_app;
 	
 	uLog(APP_INIT, "main() wx app created, starting wx event loop");
