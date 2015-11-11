@@ -106,79 +106,10 @@ int	LX::Soft_stoi(const string &s, const int def)
 	return def;
 }
 
-//---- StopWatch CTOR ---------------------------------------------------------
-
-	StopWatch::StopWatch()
-{
-	restart();
-}
-	
-StopWatch::tpt	StopWatch::getnow(void) const
-{
-	// high-res timer @ small Stroustrup, p.124
-	return high_resolution_clock::now();
-}
-	
-void	StopWatch::restart(void)
-{
-	m_LastTimePoint = getnow();
-}
-
-uint64_t	StopWatch::elap_ms(const StopWatch::tpt &tp) const
-{
-	return duration_cast<milliseconds>(tp - m_LastTimePoint).count();
-}
-
-uint64_t	StopWatch::elap_micro(const StopWatch::tpt &tp) const
-{
-	return duration_cast<microseconds>(tp - m_LastTimePoint).count();
-}
-
-uint64_t	StopWatch::elap_nano(const StopWatch::tpt &tp) const
-{
-	return duration_cast<nanoseconds>(tp - m_LastTimePoint).count();
-}
-
-string	StopWatch::elap_str(const bool &restart_f)
-{
-	const auto	tp = getnow();
-	
-	const uint64_t	ms = elap_ms(tp);
-	const uint64_t	mis = elap_micro(tp);
-	const uint64_t	nas = elap_nano(tp);
-	
-	const uint64_t	secs = ms / 1000;
-	
-	const int	n_digits = 4;
-	
-	stringstream	ss;
-	
-	ss << setw(n_digits) << setfill(' ');
-	
-	if (std::log(nas) < n_digits)		ss << nas  << " nanosecs";
-	else if (std::log10(mis) < n_digits)	ss << mis  << " microsecs";
-	else if (std::log10(ms) < n_digits)	ss << ms   << " millisecs";
-	else					ss << secs << " secs";
-	
-	if (restart_f)	restart();
-	
-	return ss.str();
-}
-
-double	StopWatch::elap_secs(void) const
-{
-	const auto	tp = getnow();
-	
-	const uint64_t	ms = elap_ms(tp);
-	
-	const double	secs = ms / 1000.0;
-	return secs;
-}
-
 //==== timestamp ==============================================================
 
-inline
-int64_t	NowMicroSecs(void)
+// static
+int64_t	timestamp_t::NowMicroSecs(void)
 {
 	const auto	tp = stampclock_t::now().time_since_epoch();
 	const auto	elap_us_no_typ = duration_cast<microseconds>(tp);
@@ -284,37 +215,63 @@ int64_t	timestamp_t::delta_us(const timestamp_t &old_stamp) const
 	
 	return d_usecs;
 }
-
 int64_t	timestamp_t::delta_ms(const timestamp_t &old_stamp) const	{return delta_us(old_stamp) / 1'000.0;}
 double	timestamp_t::delta_secs(const timestamp_t &old_stamp) const	{return delta_us(old_stamp) / 1'000'000.0;}
+
+
+int64_t	timestamp_t::GetUSecs(void) const	{return m_usecs;}
+int64_t	timestamp_t::GetIntSecs(void) const	{return GetUSecs() / 1'000'000;}
+double	timestamp_t::GetSecs(void) const	{return GetUSecs() / 1'000'000.0;}
+
+timestamp_t::stamppoint_t	timestamp_t::GetTimePoint(void) const
+{	
+	return stamppoint_t(milliseconds(m_usecs / 1'000ul));
+}
 
 // elap
 int64_t	timestamp_t::elap_us(void) const	{return timestamp_t{}.delta_us(*this);}
 int64_t	timestamp_t::elap_ms(void) const	{return timestamp_t{}.delta_ms(*this);}
 double	timestamp_t::elap_secs(void) const	{return timestamp_t{}.delta_secs(*this);}
 
-int64_t	timestamp_t::GetUSecs(void) const	{return m_usecs;}
-int64_t	timestamp_t::GetIntSecs(void) const	{return GetUSecs() / 1'000'000;}
-double	timestamp_t::GetSecs(void) const	{return GetUSecs() / 1'000'000.0;}
+string	timestamp_t::elap_str(void) const
+{
+	const uint64_t	ms = elap_ms();
+	const uint64_t	us = elap_us();
+	// const uint64_t	nas = elap_nano(tp);
+	const uint64_t	secs = elap_secs();
+	
+	const int	n_digits = 4;
+	
+	stringstream	ss;
+	
+	ss << setw(n_digits) << setfill(' ');
+	
+	/*if (std::log(nas) < n_digits)		ss << nas  << " nanosecs";
+	else*/
+	if (std::log10(us) < n_digits)		ss << us  << " microsecs";
+	else if (std::log10(ms) < n_digits)	ss << ms   << " millisecs";
+	else					ss << secs << " secs";
+	
+	return ss.str();
+}
 
-stamppoint_t	timestamp_t::GetTimePoint(void) const
-{	
-	return stamppoint_t(milliseconds(m_usecs / 1'000ul));
+string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt) const
+{
+	return xtimestamp_str(*this, fmt, stamp_fmt);
 }
 
 //---- build timestamp STRING -------------------------------------------------
 
-string	LX::xtimestamp_str(const timestamp_t &t, const string &fmt, const STAMP_FORMAT &stamp_fmt)
-
+string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT &stamp_fmt)
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
 	try
 	{
-		char	buff[MAX_TIME_STAMP_CHARS];
+		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc
 		
-		const int64_t		t_us = t.GetUSecs();
+		const int64_t		t_us = stamp.GetUSecs();
 		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
