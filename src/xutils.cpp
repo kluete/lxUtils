@@ -293,6 +293,7 @@ int64_t	timestamp_t::elap_us(void) const	{return timestamp_t{}.delta_us(*this);}
 int64_t	timestamp_t::elap_ms(void) const	{return timestamp_t{}.delta_ms(*this);}
 double	timestamp_t::elap_secs(void) const	{return timestamp_t{}.delta_secs(*this);}
 
+int64_t	timestamp_t::GetUSecs(void) const	{return m_usecs;}
 int64_t	timestamp_t::GetIntSecs(void) const	{return GetUSecs() / 1'000'000;}
 double	timestamp_t::GetSecs(void) const	{return GetUSecs() / 1'000'000.0;}
 

@@ -107,7 +107,7 @@ public:
 	std::int64_t	elap_ms(void) const;
 	double		elap_secs(void) const;
 	
-	std::int64_t	GetUSecs(void) const	{return m_usecs;}
+	std::int64_t	GetUSecs(void) const;
 	std::int64_t	GetIntSecs(void) const;
 	double		GetSecs(void) const;
 	stamppoint_t	GetTimePoint(void) const;
