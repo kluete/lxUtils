@@ -128,6 +128,7 @@ public:
 	rootLog&	ClearAllLevels(void);
 	rootLog&	EnableLevels(const unordered_set<LogLevel> &enable_set);
 	rootLog&	DisableLevels(const unordered_set<LogLevel> &disable_set);
+	rootLog&	ToggleLevel(const LogLevel lvl, const bool f);
 	
 	inline
 	bool	IsLevelEnabled(const LogLevel lvl) const

@@ -258,6 +258,17 @@ rootLog&	rootLog::DisableLevels(const unordered_set<LogLevel> &levels)
 	return *this;
 }
 
+//---- Toggle (one) Level -----------------------------------------------------
+
+rootLog&	rootLog::ToggleLevel(const LogLevel lvl, const bool f)
+{
+	if (f)
+		m_EnabledLevelSet.insert(lvl);
+	else	m_EnabledLevelSet.erase(lvl);
+	
+	return *this;
+}
+
 //---- File Log ---------------------------------------------------------------
 
 class FileLog : public LogSlot
