@@ -3,7 +3,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <VirtualDirectory Name="common">
+    <VirtualDirectory Name="lx">
       <File Name="../src/ulog.cpp"/>
       <File Name="../src/xstring.cpp"/>
       <File Name="../src/xutils.cpp"/>
@@ -12,7 +12,7 @@
     <File Name="main.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="inc">
-    <VirtualDirectory Name="common">
+    <VirtualDirectory Name="lx">
       <File Name="../inc/lx/ulog.h"/>
       <File Name="../inc/lx/xstring.h"/>
       <File Name="../inc/lx/xutils.h"/>
@@ -23,8 +23,6 @@
     <GlobalSettings>
       <Compiler Options="-Wall;-Wfatal-errors;-Wno-multichar;-Wno-sign-compare;-Wno-unused-variable;-Wno-parentheses;-pthread" C_Options="" Assembler="">
         <IncludePath Value="../inc"/>
-        <IncludePath Value="$(LXUTILS)/inc"/>
-        <IncludePath Value="$(LXUTILS_DEV)/inc"/>
         <Preprocessor Value="LX_WX=1"/>
       </Compiler>
       <Linker Options="">
