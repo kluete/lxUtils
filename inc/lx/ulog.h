@@ -164,7 +164,7 @@ enum BASE_LOG_T : LOG_HASH_T				// should use enum class ?
 {
 	FATAL		= "FATAL"_log,
 	ERROR		= "ERROR"_log,
-	LX_EXCEPTION	= "EXCEPTION"_log,
+	EXCEPTION	= "EXCEPTION"_log,
 	WARNING		= "WARNING"_log,
 	MSG		= "MSG"_log,
 	DTOR		= "DTOR"_log
