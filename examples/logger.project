@@ -7,7 +7,7 @@
       <File Name="../src/ulog.cpp"/>
       <File Name="../src/xstring.cpp"/>
       <File Name="../src/xutils.cpp"/>
-      <File Name="../../lxUtilsDev/src/xcolor.cpp"/>
+      <File Name="../src/color.cpp"/>
     </VirtualDirectory>
     <File Name="main.cpp"/>
   </VirtualDirectory>
@@ -16,7 +16,7 @@
       <File Name="../inc/lx/ulog.h"/>
       <File Name="../inc/lx/xstring.h"/>
       <File Name="../inc/lx/xutils.h"/>
-      <File Name="../../lxUtilsDev/inc/lx/xcolor.h"/>
+      <File Name="../inc/lx/color.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
