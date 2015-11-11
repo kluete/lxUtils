@@ -43,23 +43,6 @@ void	LX::xtrap(const char *s)
 	#endif
 }
 
-//---- Get Human Time array ---------------------------------------------------
-
-array<int, 4>	LX::ToHumanTimeArray(const double secs)
-{
-	if (secs < 0)		return {{-1, -1 , -1, -1}};		// no time
-	
-	const uint64_t	tot_ms = secs * 1000;
-	const uint64_t	tot_secs = secs;
-	
-	const int	h = tot_secs / 3600;
-	const int	m = (tot_secs - (h * 3600)) / 60;
-	const int	s = (tot_secs % 60);
-	const int	ms = tot_ms % 1000;
-	
-	return {{h, m, s, ms}};
-}
-
 //---- Soft (non-spurious) String to Double conversion ------------------------
 
 double	LX::Soft_stod(const string &s, const double def)
@@ -76,8 +59,6 @@ double	LX::Soft_stod(const string &s, const double def)
 	{
 		const char	*what_s = e.what();	// (don't allocate)
 		(void)what_s;
-		
-		return def;
 	}
 	
 	return def;
@@ -99,8 +80,6 @@ int	LX::Soft_stoi(const string &s, const int def)
 	{
 		const char	*what_s = e.what();	// (don't allocate)
 		(void)what_s;
-		
-		return def;
 	}
 	
 	return def;
@@ -161,18 +140,9 @@ timestamp_t	timestamp_t::FromBigBang(void)
 	return timestamp_t(0ull);
 }
 
-// static
-timestamp_t	timestamp_t::FromPlusInfinity(void)
+void	timestamp_t::reset(void)
 {
-	return timestamp_t().OffsetHours(24.0);						// HACK !
-}
-
-// reset
-timestamp_t&	timestamp_t::reset(void)
-{
-	m_usecs = NowMicroSecs();
-	
-	return *this;
+	m_usecs = NowMicroSecs();	
 }
 
 bool	timestamp_t::operator<(const timestamp_t &old_stamp) const
@@ -219,9 +189,9 @@ int64_t	timestamp_t::delta_ms(const timestamp_t &old_stamp) const	{return delta_
 double	timestamp_t::delta_secs(const timestamp_t &old_stamp) const	{return delta_us(old_stamp) / 1'000'000.0;}
 
 
-int64_t	timestamp_t::GetUSecs(void) const	{return m_usecs;}
-int64_t	timestamp_t::GetIntSecs(void) const	{return GetUSecs() / 1'000'000;}
-double	timestamp_t::GetSecs(void) const	{return GetUSecs() / 1'000'000.0;}
+int64_t	timestamp_t::GetUSecs(void) const noexcept	{return m_usecs;}
+int64_t	timestamp_t::GetIntSecs(void) const 		{return GetUSecs() / 1'000'000;}
+double	timestamp_t::GetSecs(void) const		{return GetUSecs() / 1'000'000.0;}
 
 timestamp_t::stamppoint_t	timestamp_t::GetTimePoint(void) const
 {	
@@ -237,7 +207,7 @@ string	timestamp_t::elap_str(void) const
 {
 	const uint64_t	ms = elap_ms();
 	const uint64_t	us = elap_us();
-	// const uint64_t	nas = elap_nano(tp);
+	// const uint64_t	ns = elap_ns(tp);
 	const uint64_t	secs = elap_secs();
 	
 	const int	n_digits = 4;
@@ -246,7 +216,7 @@ string	timestamp_t::elap_str(void) const
 	
 	ss << setw(n_digits) << setfill(' ');
 	
-	/*if (std::log(nas) < n_digits)		ss << nas  << " nanosecs";
+	/*if (std::log(ns) < n_digits)		ss << ns  << " nanosecs";
 	else*/
 	if (std::log10(us) < n_digits)		ss << us  << " microsecs";
 	else if (std::log10(ms) < n_digits)	ss << ms   << " millisecs";
@@ -262,14 +232,15 @@ string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt) 
 
 //---- build timestamp STRING -------------------------------------------------
 
-string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT &stamp_fmt)
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
+
+string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT &stamp_fmt)
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
 	try
 	{
-		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc
+		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc ?
 		
 		const int64_t		t_us = stamp.GetUSecs();
 		
@@ -286,7 +257,7 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 		
 		if (stamp_fmt == STAMP_FORMAT::MILLISEC)
 		{
-			const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// is CRAP unless typecast up
+			const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 
 			char	ms_buff[8];				// writes 8 bytes on x86 ???
 			
@@ -303,8 +274,7 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 	}
 	catch (...)
 	{
-		// apparently fickly - can't log from lx utils!
-		// uFatal("FATAL exception error in LX::xtimestamp_str()");
+		// apparently fickly
 		assert(0);
 	}
 }

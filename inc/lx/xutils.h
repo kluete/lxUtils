@@ -5,16 +5,15 @@
 #include <cstdint>
 #include <string>
 #include <chrono>
-#include <tuple>
-#include <array>
-
-#ifndef nil
-	#define	nil	nullptr
-#endif
 
 namespace LX
 {
-// miracle enum CLASS hasher for unordered_set/map			// actually DUMBS DOWN enum to a size_t - is too brutal?
+
+#ifndef nil
+	#define	nil	nullptr
+#endif // nil
+	
+// hasher for unordered_set/map	(DUMBS DOWN enum to a size_t - is too brutal?)
 struct EnumClassHash
 {
 	template<typename _T>
@@ -24,7 +23,6 @@ struct EnumClassHash
 	}
 };
 
-std::array<int, 4>	ToHumanTimeArray(const double secs);
 int			Soft_stoi(const std::string &s, const int def);
 double			Soft_stod(const std::string &s, const double def);
 
@@ -44,19 +42,14 @@ class timestamp_t
 public:
 	using stamppoint_t = typename stampclock_t::time_point;
 	
-	// ctors
+	// ctor
 	timestamp_t();
-	timestamp_t(const std::int64_t &t);
 	
-	static std::int64_t	NowMicroSecs(void);
 	static timestamp_t	Now(void);
 	static timestamp_t	FromSecs(const double &secs);
 	static timestamp_t	FromDMS(const int64_t &dms);
 	static timestamp_t	FromDUS(const int64_t &dus);
 	static timestamp_t	FromBigBang(void);
-	static timestamp_t	FromPlusInfinity(void);
-	
-	timestamp_t&	reset(void);
 	
 	bool		operator<(const timestamp_t &old_stamp) const;
 	bool		operator==(const timestamp_t &old_stamp) const;
@@ -66,7 +59,7 @@ public:
 	timestamp_t	OffsetMilliSecs(const int64_t &d_ms) const;
 	timestamp_t	OffsetHours(const double &d_hours) const;
 	
-	std::int64_t	GetUSecs(void) const;
+	std::int64_t	GetUSecs(void) const noexcept;
 	std::int64_t	GetIntSecs(void) const;
 	double		GetSecs(void) const;
 	stamppoint_t	GetTimePoint(void) const;
@@ -82,16 +75,24 @@ public:
 
 	std::string	stamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC) const;
 
+	void		reset(void);		// (only non-const function)
+
+protected:
+
+	timestamp_t(const std::int64_t &t);
+	
+	static std::int64_t	NowMicroSecs(void);
+
 private:
 
-	std::int64_t	m_usecs;
+	std::int64_t	m_usecs;		// would be faster w/ const ?
 };
 
 std::string	xtimestamp_str(const timestamp_t &stamp, const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC);
 std::string	xtimestamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC);
 std::string	xdatestamp_str(const std::string &fmt = "%Y-%m-%d_%H:%M:%S");
 
-void	xtrap(const char *s = nil);
+void	xtrap(const char *s = nullptr);
 
 } // namespace LX
 
