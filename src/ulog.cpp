@@ -283,9 +283,9 @@ private:
 	mutable mutex	m_Mutex;
 };
 
-//====== Log factory ==========================================================
+//---- instantiate ------------------------------------------------------------
 
-LogSlot*	rootLog::MakeLogType(const LOG_TYPE_T log_t, const string &fn)
+LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn)
 {
 	switch (log_t)
 	{

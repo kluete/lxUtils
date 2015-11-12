@@ -25,7 +25,7 @@ using std::unordered_set;
 
 using LX::timestamp_t;
 
-// based on Daniel "djb" Bernstein's hasher
+// based on Daniel "djb" Bernstein's hasher (http://www.cse.yorku.ca/~oz/hash.html)
 template<typename _intype>
 constexpr
 _intype	djb2_hash_impl(const char* text, _intype prev_hash)
@@ -49,6 +49,11 @@ LOG_HASH_T operator "" _log(const char *s, size_t n)
 
 using LogLevel = LOG_HASH_T;
 
+enum class LOG_TYPE_T : int
+{
+	STD_FILE = 1,
+};
+
 //---- Log Slot ---------------------------------------------------------------
 
 class LogSlot
@@ -65,6 +70,8 @@ public:
 	virtual void	ClearLog(void)		{}
 	
 	bool		IsMainThread(void) const;
+	
+	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn);
 
 private:
 
@@ -108,11 +115,6 @@ private:
 	LogSignal &operator=(const LogSignal &) = delete;
 };
 
-enum class LOG_TYPE_T : int
-{
-	STD_FILE = 1,
-};
-
 //---- Root (top) Log ---------------------------------------------------------
 
 class rootLog: public LogSignal
@@ -145,8 +147,6 @@ public:
 	static rootLog*	GetSingleton(void);
 	static bool	HasLogLevel_LL(const LogLevel lvl);
 	static void	DoULog_LL(const LogLevel lvl, const string &msg);
-	
-	static LogSlot*	MakeLogType(const LOG_TYPE_T log_t, const string &fn);
 	
 private:
 
