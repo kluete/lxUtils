@@ -18,9 +18,9 @@ I started writing these for a language-teaching software called "Linguamix", whi
 
 ## Headers
 * [color.h](inc/lx/color.h) - RGB color definitions for the UI
-* [ulog.h](inc/lx/ulog.h) - logger header
-* [xstring.h](inc/lx/xstring.h) - sprintf-formatter header
-* [xutils.h](inc/lx/xutils.h) - time & timestamp header
+* [ulog.h](inc/lx/ulog.h) - logger interfaces
+* [xstring.h](inc/lx/xstring.h) - sprintf-formatter
+* [xutils.h](inc/lx/xutils.h) - timestamps & misc
 
 
 ## Example
@@ -30,12 +30,12 @@ The file ./examples/main.cpp implements a wxWidgets-based user interface to gene
 
 ## Compiler Defines
 
-to bridge with JUCE
+* to bridge with JUCE
   #define LX_JUCE 1
 
-to bridge with wxWidgets
+* to bridge with wxWidgets
   #define LX_WX 1
 
-to enable off-thread log generation
+* to enable off-thread log generation
   #define LOG_FROM_ASYNC 1
   
