@@ -16,8 +16,9 @@
 
 namespace LX
 {
+using std::uint32_t;
 using std::unique_ptr;
-	
+
 //---- rgb colors -------------------------------------------------------------
 
 enum class RGB_COLOR : uint32_t
@@ -82,42 +83,61 @@ class Color
 	static constexpr double	one_over_255 = 1.0 / 255.0;
 	
 	static constexpr
-	double	clamp01(const double &v) noexcept
+	double	clamp01(const double v) noexcept
 	{
-		return std::max(0.0, std::min(1.0, v));
+		// return std::max(0.0, std::min(1.0, v));		// g++ 4.9.1 says "not a constexpr"
+		return (v < 0.0) ? 0.0 : ((v > 1.0) ? 1.0 : v);
+	}
+	
+	static constexpr
+	int	comp(const uint32_t rgba32, const int sh) noexcept
+	{
+		return (rgba32 >> (sh * 8)) & 0xff;
 	}
 	
 public:
 	// ctors
 	explicit constexpr
-	Color(const double &r_, const double &g_, const double &b_, const double &a_ = 1.0)
+	Color(const double r_, const double g_, const double b_, const double a_ = 1.0) noexcept
 		: m_r(clamp01(r_)), m_g(clamp01(g_)), m_b(clamp01(b_)), m_a(clamp01(a_))		// (auto-clamped)
 	{
 	}
 	
 	explicit constexpr
-	Color(const int r, const int g, const int b, const int a = 255)
+	Color(const int r, const int g, const int b, const int a = 255) noexcept
 		: Color(r * one_over_255, g * one_over_255, b * one_over_255, a * one_over_255)
-	{}
+	{
+	}
 	
-	constexpr Color(const RGB_COLOR rgba_enum)
-		: Color(FromRGBA32((uint32_t)rgba_enum))
-	{}
-	
-	// re-enable vanilla ctors
-	Color(const Color&) = default;
-	Color& operator=(const Color&) = default;
+	constexpr
+	Color(const RGB_COLOR rgba_enum) noexcept
+		: Color(FromRGBA32(static_cast<uint32_t>(rgba_enum)))
+	{
+	}
 	
 	static constexpr
 	Color	FromRGBA32(const uint32_t rgba32) noexcept
 	{
-		const int	ri((rgba32 >> 24) & 0xfful);
-		const int	gi((rgba32 >> 16) & 0xfful);
-		const int	bi((rgba32 >>  8) & 0xfful);
-		const int	ai((rgba32 >>  0) & 0xfful);
-		
-		return Color(ri, gi, bi, ai);
+		#if 0
+			// g++ 4.9.1 doesn't support full c++14 constexpr ? (works fine in clang)
+			const int	ri(comp(rgba32, 3));
+			const int	gi(comp(rgba32, 2));
+			const int	bi(comp(rgba32, 1));
+			const int	ai(comp(rgba32, 0));
+			
+			return Color(ri, gi, bi, ai);
+		#else
+			return Color(	comp(rgba32, 3),
+					comp(rgba32, 2),
+					comp(rgba32, 1),
+					comp(rgba32, 0));
+					
+		#endif
 	}
+	
+	// re-enable vanilla ctors
+	Color(const Color&) = default;
+	Color& operator=(const Color&) = default;
 	
 	constexpr
 	Color	Clamped(void) const noexcept
