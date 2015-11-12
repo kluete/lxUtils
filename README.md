@@ -31,11 +31,11 @@ The project was created with the [CodeLite](http://www.codelite.org) IDE, which 
 
 ## Compiler Defines
 
-* to bridge with JUCE  
+* to bridge with [JUCE](http://www.juce.com)  
 
     \#define LX_JUCE 1
 
-* to bridge with wxWidgets  
+* to bridge with [wxWidgets](http://www.wxwidgets.org)  
 
     \#define LX_WX 1
 
@@ -46,7 +46,7 @@ The project was created with the [CodeLite](http://www.codelite.org) IDE, which 
 
 ## Formatting
 
-* I use 8-char tabs, not spaces, so there.
+* I use 8-char tabs, not spaces. So there.
 
 
 ## Factoids
@@ -54,5 +54,5 @@ The project was created with the [CodeLite](http://www.codelite.org) IDE, which 
 * I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from.
 * source files inevitably end wih the comment  
     // nada mas  
-  ever since I used a macro-assembler that wouldn't flush the disk cache before executing the build, so on crash my source files would be missing a sector's worth of data (back then I barely spoke Spanish).
+  ever since I used a macro-assembler that wouldn't flush the disk cache correctly, so on crash my source files would be missing a sector's worth of data.
 * swearwords usually come more naturally to me in French.
