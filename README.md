@@ -4,10 +4,10 @@ About lxUtils
 These files contain C++14 utilities for:
 
 * template-based sprintf() formatting à la [Bjarne Stroustrup "A Type-Safe printf"][1]
-* free-form log tags (instead of levels) with compile-time string hashing from [Daniel Bernstein][2]
+* free-form log _tags_ (instead of levels) with compile-time string hashing from [Daniel Bernstein][2]
 * thread-aware logging with normalized timestamps
 
-The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform _TAGS_ that can be ANDed, ORed, etc., like in std::unordered_set. Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared in an enum, say, and can be used in any source file / translation unit, without worrying about initialization order (static-, thread-local- or otherwise).
+The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc., like in std::unordered_set. Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared (in an enum, say), can be used in any source file or translation unit, without worrying about initialization order (static-, thread-local- or otherwise).
 
 I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from. 
 
@@ -25,7 +25,7 @@ I started writing these for a language-teaching software called "Linguamix", whi
 
 ## Example
 
-The file ./examples/main.cpp implements a wxWidgets-based user interface to generate logs from different threads, display them in color, and dynamically toggle filtering. A secondary file log target is created upstream. Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++. The project was created with the CodeLite IDE, which generates a Makefile.
+The file ./examples/main.cpp implements a wxWidgets-based user interface to generate logs from different threads, display them in color, and dynamically toggle filtering. A secondary file log target is created upstream. Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++. The project was created with [CodeLite](http://www.codelite.org), which generates a Makefile.
 
 
 ## Compiler Defines
