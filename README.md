@@ -26,7 +26,7 @@ The file [main.cpp](examples/main.cpp) implements a wxWidgets-based user interfa
 
 Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.  
 
-The project was created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake receipe shortly.
+The project was created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake recipe shortly.
 
 
 ## Compiler Defines
