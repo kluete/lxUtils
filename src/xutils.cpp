@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <stdexcept>
 #include <ctime>
 
 #include <cstring>
