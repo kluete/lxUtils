@@ -52,7 +52,7 @@ The project was created with the [CodeLite](http://www.codelite.org) IDE, which 
 ## Factoids
 
 * I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from.
-* source files inevitably end wih the comment
+* source files inevitably end wih the comment  
     // nada mas  
   ever since I used a macro-assembler that wouldn't flush the disk cache before executing the build, so on crash my source files would be missing a sector's worth of data (back then I barely spoke Spanish).
 * swearwords usually come more naturally to me in French.
