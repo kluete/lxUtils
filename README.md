@@ -3,7 +3,7 @@
 These files contain C++14 utilities for:
 
 * template-based sprintf() formatting à la [Bjarne Stroustrup "A Type-Safe printf"][1], see "The C++ Programming Language", 4th edition, section 28.6.1 (page 809)
-* free-form log _tags_ (instead of levels) with compile-time string hashing from [Daniel Bernstein][2]
+* free-form log _tags_ (instead of levels) with compile-time string hashing from [Dan Bernstein][2]
 * thread-aware logging with normalized timestamps
 
 The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc., like in std::unordered_set.  
