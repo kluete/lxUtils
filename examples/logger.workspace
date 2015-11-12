@@ -2,10 +2,10 @@
 <CodeLite_Workspace Name="logger" Database="./logger.tags" SWTLW="No">
   <Project Name="logger" Path="logger.project" Active="Yes"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="yes">
+    <WorkspaceConfiguration Name="Debug" Selected="no">
       <Project Name="logger" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Debug gcc49" Selected="no">
+    <WorkspaceConfiguration Name="Debug gcc49" Selected="yes">
       <Project Name="logger" ConfigName="Debug gcc49"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
