@@ -3,19 +3,18 @@ About lxUtils
 
 These files contain C++14 utilities for:
 
-* template-based sprintf() formatting [1]
-* free-form logging with compile-time string hashing from  [2]
+* template-based sprintf() formatting [Bjarne Stroustrup "A Type-Safe printf"][1]
+* free-form logging with compile-time string hashing from [Daniel Bernstein][2]
 * thread-aware logging with normalized timestamps
 
 The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform TAGS that can be ANDed, ORed, etc., like in std::unordered_set. Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared in an enum, say, and can be used in any source file / translation unit, without worrying about initialization order (static-, thread-local- or otherwise).
 
 I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from.
 
-[1] Bjarne Stroustrup "The C++ Programming Language", 4th edition, section 28.6.1: "A Type-Safe printf" (page 809)
-    [Stroustrup variadic templates](http://www.stroustrup.com/C++11FAQ.html#variadic-templates)
-[2] Daniel Berstein's "djb2" string hasher
-    [djb2 hash](http://www.cse.yorku.ca/~oz/hash.html)
+[1]: http://www.stroustrup.com/C++11FAQ.html#variadic-templates
+[2]: http://www.cse.yorku.ca/~oz/hash.html
 
+"The C++ Programming Language", 4th edition, section 28.6.1 (page 809)
 
 ## Headers
 * [color.h](inc/lx/color.h) - RGB color definitions for the UI
