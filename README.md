@@ -31,11 +31,12 @@ The file ./examples/main.cpp implements a wxWidgets-based user interface to gene
 ## Compiler Defines
 
 * to bridge with JUCE
-  #define LX_JUCE 1
+    #define LX_JUCE 1
 
 * to bridge with wxWidgets
-  #define LX_WX 1
+    #define LX_WX 1
 
 * to enable off-thread log generation
-  #define LOG_FROM_ASYNC 1
-  
+    #define LOG_FROM_ASYNC 1
+
+
