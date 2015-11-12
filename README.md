@@ -1,5 +1,4 @@
-About lxUtils
-=============
+# About lxUtils
 
 These files contain C++14 utilities for:
 
@@ -42,4 +41,8 @@ The file ./examples/main.cpp implements a wxWidgets-based user interface to gene
 
     \#define LOG_FROM_ASYNC 1
 
+
+## Formatting
+
+* I use 8-char tabs, not spaces  
 
