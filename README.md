@@ -22,7 +22,7 @@ Log tags are computed at compile-time in constexpr functions, so don't need to b
 
 ## Example
 
-The file ./examples/main.cpp implements a wxWidgets-based user interface to generate logs from different threads, display them in color, and dynamically toggle filtering. A secondary file log target is created upstream.  
+The file [main.cpp](examples/main.cpp) implements a wxWidgets-based user interface to generate logs from different threads, display them in color, and dynamically toggle filtering. A secondary file log target is created upstream.  
 
 Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.  
 
