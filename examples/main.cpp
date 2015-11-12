@@ -2,21 +2,20 @@
 #include <cassert>
 #include <memory>
 #include <algorithm>
-#include <functional>
 #include <thread>
 #include <future>
 
 #include "wx/wx.h"
 
 #include "lx/ulog.h"
-
 #include "lx/color.h"
 
-#define	LOG_FROM_ASYNC		0
+#define	LOG_FROM_ASYNC		1
 
 using namespace std;
 using namespace	LX;
 
+// UI constants
 enum
 {
 	MENU_ID_QUIT = wxID_EXIT,
@@ -27,7 +26,8 @@ enum
 	BUTTON_ID_QUIT,
 };
 
-// log level (or ID) definition
+// log level/ID definition (label, color) -------------------------------------
+
 struct log_def
 {
 	log_def(const string &label, const RGB_COLOR &clr)
@@ -42,7 +42,8 @@ struct log_def
 	// could also store hash but is just as well recomputed
 };
 
-// log event entry (storage for batch processing)
+// log event (storage for batch processing)
+
 struct log_evt
 {
 	log_evt(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const int thread_index)
@@ -56,7 +57,7 @@ struct log_evt
 	const int		m_Thread;
 };
 
-//---- declare log levels by hashing them -------------------------------------
+//---- declare/hash log levels at compile time --------------------------------
 
 #define CLIENT_LOG_MACRO(arg)	arg = #arg##_log
 
@@ -70,7 +71,7 @@ enum ImpLogLevel : LogLevel
 };	
 #undef CLIENT_LOG_MACRO
 
-//---- Log level definition (label, color) ------------------------------------
+//---- Log level definition table ---------------------------------------------
 
 #define LOG_DEF_MACRO(t, clr)	{t, log_def(#t, RGB_COLOR::clr)}
 
@@ -108,10 +109,12 @@ public:
 		m_Button3(this, BUTTON_ID_3, "user 3"),
 		m_QuitButton(this, BUTTON_ID_QUIT, "Quit")
 	{
+		wxMenu *fileMenu = new wxMenu;
+		fileMenu->Append(MENU_ID_QUIT, "Exit", "Quit this program");
 		
-		CreateStatusBar(1);
-		
-		InitMenus();
+		wxMenuBar *menuBar = new wxMenuBar();
+		menuBar->Append(fileMenu, "File");
+		SetMenuBar(menuBar);
 		
 		wxFont	ft(wxFontInfo(9).Family(wxFONTFAMILY_MODERN).Encoding(wxFONTENCODING_DEFAULT));
 		m_TextCtrl.SetDefaultStyle(wxTextAttr(*wxBLACK, *wxWHITE, ft));
@@ -159,8 +162,6 @@ public:
 		
 		SetSizer(top_v_sizer);
 		
-		SetStatusText("Welcome to uLog's freeform example!");
-		
 		Show();
 		Centre();
 		
@@ -172,11 +173,12 @@ public:
 	void	OnClose(wxCloseEvent &e)
 	{
 		#if LOG_FROM_ASYNC
-			// manually disconnect self (ui log receiver) so file logger continues
+			// manually disconnect self (ui log receiver) so we can keep logging during class destruction
+			// the file log will continue receiving events
 			DisconnectSelfSlot();
 		#endif
 		
-		uLog(UI_CMD, "MyFrame::OnClose()");
+		uLog(APP_INIT, "MyFrame::OnClose()");
 		
 		e.Skip();
 	}
@@ -231,6 +233,7 @@ public:
 		auto	*rlog_p = rootLog::GetSingleton();
 		assert(rlog_p);
 		
+		// toggle log level on/off
 		rlog_p->ToggleLevel(lvl, f);
 		
 		e.Skip();
@@ -238,38 +241,26 @@ public:
 	
 private:
 	
-	void	InitMenus(void)
-	{
-		wxMenu *fileMenu = new wxMenu;
-		fileMenu->Append(MENU_ID_QUIT, "Exit", "Quit this program");
-		
-		wxMenuBar *menuBar = new wxMenuBar();
-		menuBar->Append(fileMenu, "File");
-		SetMenuBar(menuBar);
-	}
-	
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
 	{
-		assert(!IsBeingDeleted());
-		
-		unique_lock<mutex>	lock(m_ThreadMutex);
+		unique_lock<mutex>	lock(m_QueueMutex);
 		
 		const auto	tid = this_thread::get_id();
 		
-		if (!m_ThreadIndexMap.count(tid))	m_ThreadIndexMap.emplace(tid, m_ThreadIndexMap.size());
+		if (!m_ThreadIdMap.count(tid))	m_ThreadIdMap.emplace(tid, m_ThreadIdMap.size());
 			
-		const int	thread_index = m_ThreadIndexMap.at(tid);
-			
+		const int	thread_index = m_ThreadIdMap.at(tid);
+		
+		// queue
 		m_LogEvents.emplace_back(stamp, level, msg, thread_index);
-			
+		
+		// trigger dequeue on main thread
 		CallAfter(&MyFrame::DequeueLogs);
 	}
 	
 	void	DequeueLogs(void)
 	{
-		assert(!IsBeingDeleted());
-		
-		unique_lock<mutex>	lock(m_ThreadMutex);
+		unique_lock<mutex>	lock(m_QueueMutex);
 		
 		for (const auto &e : m_LogEvents)
 		{
@@ -293,9 +284,9 @@ private:
 		future<void>		m_Fut;
 	#endif
 	
-	mutable mutex			m_ThreadMutex;
+	mutable mutex			m_QueueMutex;
 	vector<log_evt>			m_LogEvents;
-	unordered_map<thread::id, int>	m_ThreadIndexMap;
+	unordered_map<thread::id, int>	m_ThreadIdMap;
 	
 	DECLARE_EVENT_TABLE()
 };
@@ -322,9 +313,8 @@ class MyApp : public wxApp
 public:
 	
 	MyApp()
-		: m_TopFrame(nil)
 	{	
-		uLog(MSG, "MyApp::CTOR()");
+		uLog(APP_INIT, "MyApp::CTOR()");
 	}
 	
 	virtual ~MyApp()
@@ -334,14 +324,15 @@ public:
 	
 	bool	OnInit() override
 	{
-		uLog(MSG, "MyApp::OnInit()");
+		uLog(APP_INIT, "MyApp::OnInit()");
 		
 		if (!wxApp::OnInit())        return false;		// error
 		
 		auto	*rlog_p = rootLog::GetSingleton();
 		assert(rlog_p);
 		
-		m_TopFrame = new MyFrame("logger wx", *rlog_p);
+		new MyFrame("freeform log", *rlog_p);
+		// (don't mem-manage wx resources)
 		
 		return true;
 	}
@@ -355,31 +346,30 @@ public:
 	
 	int	OnRun() override
 	{
-		uLog("APP_INIT", "MyApp::OnRun()");
+		uLog(APP_INIT, "MyApp::OnRun()");
 		
 		return wxApp::OnRun();
 	}
-		
-private:
-	
-	MyFrame		*m_TopFrame;		// (don't mem-manage wx resources)
 };
 
 //---- main -------------------------------------------------------------------
 
 int	main(int argc, char* argv[])
 {
-	static rootLog		s_LogImp;			// don't use STATIC / out-of-order initializaion
+	unique_ptr<rootLog>	logImp = make_unique<rootLog>();
+	assert(logImp);
 	
-	s_LogImp.EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
+	logImp->EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
 	
 	// s_LogImp.EnableLevels({DTOR});
-	s_LogImp.EnableLevels({APP_INIT});
-	s_LogImp.EnableLevels({UI_CMD});
-	s_LogImp.EnableLevels({USER1, USER2, USER3});
+	logImp->EnableLevels({APP_INIT});
+	logImp->EnableLevels({UI_CMD});
+	logImp->EnableLevels({USER1, USER2, USER3});
 		
-	/*unique_ptr<ddtLog>*/auto	file_log(rootLog::MakeLogType(LOG_TYPE_T::STD_FILE, "freeform.log"));
-	s_LogImp.Connect(file_log);
+	unique_ptr<LogSlot>	file_log(LogSlot::Create(LOG_TYPE_T::STD_FILE, "freeform.log"));
+	assert(file_log);
+	
+	logImp->Connect(file_log.get());
 		
 	uLog(APP_INIT, "main() file log created, creating wx app");
 	
