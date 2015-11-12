@@ -1,4 +1,6 @@
-// extra string functions
+// lx utils template-based string formatting
+// based on Stroustrup's idea
+//   http://www.stroustrup.com/C++11FAQ.html#variadic-templates 
 
 #pragma once
 
