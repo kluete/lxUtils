@@ -14,7 +14,7 @@ Log tags are computed at compile-time in constexpr functions, so don't need to b
 [2]: http://www.cse.yorku.ca/~oz/hash.html
 
 ## Headers
-* [color.h](inc/lx/color.h) - RGB color definitions for the UI
+* [color.h](inc/lx/color.h) - RGB color definitions for the UI (not important)
 * [ulog.h](inc/lx/ulog.h) - logger interfaces
 * [xstring.h](inc/lx/xstring.h) - sprintf-formatter
 * [xutils.h](inc/lx/xutils.h) - timestamps & misc
