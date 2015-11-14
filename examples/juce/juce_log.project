@@ -29,7 +29,7 @@
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-pthread" C_Options="" Assembler="">
+      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-pthread;-Wshadow" C_Options="" Assembler="">
         <IncludePath Value="../../inc"/>
         <IncludePath Value="JuceLibraryCode"/>
         <IncludePath Value="$(JUCE_DIR)"/>

@@ -21,7 +21,7 @@
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-pthread" C_Options="" Assembler="">
+      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-Wshadow;-pthread" C_Options="" Assembler="">
         <IncludePath Value="../../inc"/>
         <Preprocessor Value="LX_WX=1"/>
       </Compiler>
