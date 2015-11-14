@@ -3,5 +3,6 @@
 .codelite
 *.mk
 logger.txt
+juce_log.txt
 *.bin
 Makefile
