@@ -4,25 +4,25 @@
   <Dependencies/>
   <VirtualDirectory Name="src">
     <VirtualDirectory Name="lx">
-      <File Name="../src/ulog.cpp"/>
-      <File Name="../src/xstring.cpp"/>
-      <File Name="../src/xutils.cpp"/>
-      <File Name="../src/color.cpp"/>
+      <File Name="../../src/color.cpp"/>
+      <File Name="../../src/ulog.cpp"/>
+      <File Name="../../src/xstring.cpp"/>
+      <File Name="../../src/xutils.cpp"/>
     </VirtualDirectory>
     <File Name="main.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="inc">
     <VirtualDirectory Name="lx">
-      <File Name="../inc/lx/ulog.h"/>
-      <File Name="../inc/lx/xstring.h"/>
-      <File Name="../inc/lx/xutils.h"/>
-      <File Name="../inc/lx/color.h"/>
+      <File Name="../../inc/lx/color.h"/>
+      <File Name="../../inc/lx/ulog.h"/>
+      <File Name="../../inc/lx/xstring.h"/>
+      <File Name="../../inc/lx/xutils.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-Wall;-Wfatal-errors;-Wno-multichar;-Wno-sign-compare;-Wno-unused-variable;-Wno-parentheses;-pthread" C_Options="" Assembler="">
-        <IncludePath Value="../inc"/>
+      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-pthread" C_Options="" Assembler="">
+        <IncludePath Value="../../inc"/>
         <Preprocessor Value="LX_WX=1"/>
       </Compiler>
       <Linker Options=""/>
