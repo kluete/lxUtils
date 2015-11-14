@@ -16,6 +16,29 @@ Log tags are computed at compile-time in constexpr functions, so don't need to b
 
 ## Overview
 
+```c++
+#include "lx/ulog.h"
+
+void	resized() override
+{
+	uLog("UI"_log, "resized component %s to %d x %d", getName(), getWidth(), getHeight());
+}
+
+constexpr auto	APP_DTOR = "APP_DTOR"_log;
+
+void	shutdown() override
+{
+	uLog(APP_DTOW, "App::shutdown()");
+	
+}
+
+	JUCEApplicationImp::~JUCEApplicationImp()
+{
+	uLog(DTOR, "App::DTOR");
+}
+
+```
+
 ## Headers
 
 * [ulog.h](inc/lx/ulog.h) - logger interfaces
