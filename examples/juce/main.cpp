@@ -15,9 +15,11 @@ using namespace	std;
 using namespace juce;
 using namespace LX;
 
+const int	TAB_MARGIN = 4;
+
 const int	BUTT_W = 100;
 const int	BUTT_H = 32;
-const int	MARGIN = 10;
+const int	BUTT_MARGIN = 10;
 
 // log level/ID definition (label, color) -------------------------------------
 
@@ -81,7 +83,7 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 	
 	// client log levels
 	LOG_DEF_MACRO(APP_INIT,		NIGHT_BLUE),
-	LOG_DEF_MACRO(UI_CMD,		GREEN),
+	LOG_DEF_MACRO(UI_CMD,		MID_GREEN),
 	LOG_DEF_MACRO(USER1,		PURPLE),
 	LOG_DEF_MACRO(USER2,		BLUE),
 	LOG_DEF_MACRO(USER3,		CYAN),
@@ -90,7 +92,7 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 
 //---- Main Component ---------------------------------------------------------
 
-class MainComponent : public Component, public ButtonListener, public LogSlot, private AsyncUpdater
+class MainComponent : public Component, public ButtonListener, public LogSlot, public ListBoxModel, private AsyncUpdater
 {
 public:
 	MainComponent(rootLog &root_log)
@@ -101,10 +103,25 @@ public:
 		m_TextCtrl.setReadOnly(true);
 		m_TextCtrl.setCaretVisible(false);
 		
+		for (const auto &it : s_LogLevelDefMap)
+		{
+			const string	s = it.second.m_Label;
+			
+			m_Labels.push_back(s);
+		}
+		
+		std::sort(m_Labels.begin(), m_Labels.end());
+
 		const string	monofont_s = Font::getDefaultMonospacedFontName().toStdString();
 		
-		m_TextCtrl.setFont(Font(monofont_s, 13, Font::plain));
+		m_TextCtrl.setFont(Font(monofont_s, 15, Font::plain));
 		addAndMakeVisible(&m_TextCtrl);
+		
+		// m_Checklist.setFont(Font(monofont_s, 13, Font::plain));
+		m_Checklist.setModel(this);
+		m_Checklist.setRowHeight(16);
+		m_Checklist.setMultipleSelectionEnabled(true);
+		addAndMakeVisible(&m_Checklist);
 		
 		addAndMakeVisible(&m_Button1);
 		m_Button1.addListener(this);
@@ -126,6 +143,8 @@ public:
 
 	void	buttonClicked(Button *clicked) override
 	{
+		uLog(UI_CMD, "buttonClicked()");
+		
 		if (clicked == &m_Button1)
 		{
 			uLog(USER1, "button1");
@@ -148,6 +167,62 @@ public:
 		{
 			JUCEApplication::quit();
 		}
+	}
+	
+	int	getNumRows(void) override
+	{
+		return m_Labels.size();
+	}
+	
+	void	paintListBoxItem(int row, Graphics &g, int w, int h, bool selected_f) override
+	{
+		assert(row < m_Labels.size());
+		
+		g.fillAll(Colours::white);
+		
+		const string	level_s = m_Labels[row];
+		
+		const LogLevel	lvl = log_hash(level_s.c_str());
+			
+		auto	*rlog_p = rootLog::GetSingleton();
+		assert(rlog_p);
+		
+		const bool	enabled_f = rlog_p->IsLevelEnabled(lvl);
+		
+		g.setColour(Color(enabled_f ? RGB_COLOR::SOFT_BLACK : RGB_COLOR::BRIGHT_GREY));
+		// g.setFont(m_Font);
+		const Rectangle<int>	r(0, 0, w, h);
+		g.drawText(String(level_s), r.reduced(4, 2), Justification::left, true/*ellipsize*/);
+	}
+	
+	void	listBoxItemClicked(int row, const MouseEvent &e) override
+	{
+		ToggleRow(row);
+	}
+	
+	/*
+	void	backgroundClicked(int row, const MouseEvent &e) override
+	{
+		ToggleRow();
+	}*/
+	
+	void	ToggleRow(const int row)
+	{	
+		uLog(UI_CMD, "listBoxItemClicked(%d)", row);
+		
+		assert(row < m_Labels.size());
+		
+		const LogLevel	lvl = log_hash(m_Labels[row].c_str());
+		
+		auto	*rlog_p = rootLog::GetSingleton();
+		assert(rlog_p);
+		
+		const bool	enabled_f = rlog_p->IsLevelEnabled(lvl);
+		
+		rlog_p->ToggleLevel(lvl, !enabled_f);
+		
+		m_Checklist.updateContent();
+		m_Checklist.repaint();
 	}
 	
 private:
@@ -189,27 +264,44 @@ private:
 		
 		m_LogEvents.clear();
 	}
-
+	
 	void	resized() override
 	{
 		const int	w = getWidth();
 		const int	h = getHeight();
 		
-		const Rectangle<int>	r(0, 0, w, h - BUTT_H - MARGIN);
+		const int	wL = w * 0.8;
+		const int	wR = w - wL;
 		
-		m_TextCtrl.setBounds(r.reduced(MARGIN));
+		const Rectangle<int>	rL(0, 0, wL, h - BUTT_H - BUTT_MARGIN);
+		const Rectangle<int>	rR(wL, 0, wR, h - BUTT_H - BUTT_MARGIN);
 		
-		const int	base_y = h - (BUTT_H + MARGIN);
+		m_TextCtrl.setBounds(rL.reduced(TAB_MARGIN));
+		
+		m_Checklist.setBounds(rR.reduced(TAB_MARGIN));
+		
+		const int	base_y = h - (BUTT_H + BUTT_MARGIN);
 
-		m_Button1.setBounds(MARGIN, base_y, BUTT_W, BUTT_H);
-		m_Button2.setBounds(MARGIN + BUTT_W + MARGIN, base_y, BUTT_W, BUTT_H);
-		m_Button3.setBounds(MARGIN + BUTT_W + MARGIN + BUTT_W + MARGIN, base_y, BUTT_W, BUTT_H);
+		m_Button1.setBounds(BUTT_MARGIN, base_y, BUTT_W, BUTT_H);
+		m_Button2.setBounds(BUTT_MARGIN + BUTT_W + BUTT_MARGIN, base_y, BUTT_W, BUTT_H);
+		m_Button3.setBounds(BUTT_MARGIN + BUTT_W + BUTT_MARGIN + BUTT_W + BUTT_MARGIN, base_y, BUTT_W, BUTT_H);
 		
-		m_QuitButton.setBounds(w - (MARGIN + BUTT_W), base_y, BUTT_W, BUTT_H);
+		m_QuitButton.setBounds(w - (BUTT_MARGIN + BUTT_W), base_y, BUTT_W, BUTT_H);
+	}
+	
+	void	paint(Graphics &g) override
+	{
+		g.fillAll(Color(RGB_COLOR::GTK_GREY));
+		
+		// g.setColour(Color(RGB_COLOR::GTK_GREY).Darker(80));
+		// g.drawRect(getLocalBounds().reduced(1), 1);
 	}
 
 	TextEditor	m_TextCtrl;
+	ListBox		m_Checklist;
 	TextButton	m_Button1, m_Button2, m_Button3, m_QuitButton;
+	
+	vector<string>	m_Labels;
 	
 	mutable mutex			m_QueueMutex;
 	vector<log_evt>			m_LogEvents;
@@ -274,7 +366,7 @@ public:
 
 	const String	getApplicationName() override
 	{
-		return "Hello JUCE!";
+		return "freeform log on JUCE";
 	}
 
 	const String	getApplicationVersion() override
