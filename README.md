@@ -4,7 +4,7 @@ These files contain C++14 utilities for:
 
 * template-based sprintf() formatting à la [Bjarne Stroustrup "A Type-Safe printf"][1], see "The C++ Programming Language", 4th edition, section 28.6.1 (page 809)
 * free-form log _tags_ (instead of levels) with compile-time string hashing from [Dan Bernstein][2]
-* thread-aware logging with normalized timestamps
+* thread-aware logic with normalized timestamps
 
 The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc., like in std::unordered_set.  
 
@@ -14,32 +14,48 @@ Log tags are computed at compile-time in constexpr functions, so don't need to b
 [2]: http://www.cse.yorku.ca/~oz/hash.html
 
 ## Headers
-* [color.h](inc/lx/color.h) - RGB color definitions for the UI (not important)
+
 * [ulog.h](inc/lx/ulog.h) - logger interfaces
 * [xstring.h](inc/lx/xstring.h) - sprintf-formatter
 * [xutils.h](inc/lx/xutils.h) - timestamps & misc
+* [color.h](inc/lx/color.h) - RGB color definitions for the UI (optional)
+
+Within these headers, declarations happen within their own namespace _LX_. Any local synonyms to STL types are \#used individually (not in bulk) within the LX namespace, i.e. without polluting the global namespace (see Stroustrup "The C++ Programming Language", 4th ed, Section 14.2.2: "using declarations"). 
 
 
-## Example
+## Examples
 
-The file [main.cpp](examples/main.cpp) implements a wxWidgets-based user interface to generate logs from different threads, display them in color, and dynamically toggle filtering. A secondary file log target is created upstream.  
+There are UI integration examples for [JUCE](http://www.juce.com) and [wxWidgets](http://www.wxwidgets.org), respectively. The single-source app generates logs from different threads, displays them in color, and dynamically toggles filtering. A secondary file log target is created upstream.  
 
 Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.  
 
-The project was created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake recipe shortly.
+Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake recipe shortly.
 
 
-## Compiler Defines
+## Build Configuration
 
-* to bridge with [JUCE](http://www.juce.com)  
+### Environment Variables
+
+* path to JUCE source code (e.g. /usr/local/JUCE)  
+
+    \$(JUCE_DIR)
+
+* path to wxWidgets configuration (e.g. /usr/local/wxWidgets/lib/config/gtk2-unicode-static-3.1)  
+
+    \$(WXCONF_PATH)
+
+
+### Compiler Defines
+
+* to bridge with JUCE  
 
     \#define LX_JUCE 1
 
-* to bridge with [wxWidgets](http://www.wxwidgets.org)  
+* to bridge with wxWidgets  
 
     \#define LX_WX 1
 
-* to enable off-thread log generation
+* to enable off-thread log generation  
 
     \#define LOG_FROM_ASYNC 1
 
