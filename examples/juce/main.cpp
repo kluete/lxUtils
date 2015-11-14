@@ -11,6 +11,8 @@
 #include "lx/xutils.h"
 #include "lx/color.h"
 
+#define	LOG_FROM_ASYNC		1
+
 using namespace	std;
 using namespace juce;
 using namespace LX;
@@ -139,6 +141,8 @@ public:
 		setVisible(true);
 		
 		root_log.Connect(this);
+		
+		uMsg("vanilla log from ui thread");
 	}
 
 	void	buttonClicked(Button *clicked) override
@@ -147,19 +151,28 @@ public:
 		
 		if (clicked == &m_Button1)
 		{
-			uLog(USER1, "button1");
+			uLog(USER1, "user1");
 			return;
 		}
 
 		if (clicked == &m_Button2)
 		{
-			uLog(USER2, "button2");
+			#if LOG_FROM_ASYNC
+				m_Fut = async(std::launch::async, []{this_thread::sleep_for(200ms);uLog(USER2, "user2 in async task");});
+			#else
+				uLog(USER2, "user2 from default thread");
+			#endif
 			return;
 		}
 
 		if (clicked == &m_Button3)
 		{
-			uLog(USER3, "button3");
+			#if LOG_FROM_ASYNC
+				m_Fut = async(std::launch::async, []{this_thread::sleep_for(3s);uLog(USER3, "user3 in async nap");});
+			#else
+				uLog(USER3, "user3 from vanilla");
+			#endif
+		
 			return;
 		}
 
@@ -197,17 +210,6 @@ public:
 	
 	void	listBoxItemClicked(int row, const MouseEvent &e) override
 	{
-		ToggleRow(row);
-	}
-	
-	/*
-	void	backgroundClicked(int row, const MouseEvent &e) override
-	{
-		ToggleRow();
-	}*/
-	
-	void	ToggleRow(const int row)
-	{	
 		uLog(UI_CMD, "listBoxItemClicked(%d)", row);
 		
 		assert(row < m_Labels.size());
@@ -292,16 +294,17 @@ private:
 	void	paint(Graphics &g) override
 	{
 		g.fillAll(Color(RGB_COLOR::GTK_GREY));
-		
-		// g.setColour(Color(RGB_COLOR::GTK_GREY).Darker(80));
-		// g.drawRect(getLocalBounds().reduced(1), 1);
 	}
 
-	TextEditor	m_TextCtrl;
-	ListBox		m_Checklist;
-	TextButton	m_Button1, m_Button2, m_Button3, m_QuitButton;
+	TextEditor			m_TextCtrl;
+	ListBox				m_Checklist;
+	TextButton			m_Button1, m_Button2, m_Button3, m_QuitButton;
 	
-	vector<string>	m_Labels;
+	vector<string>			m_Labels;
+	
+	#if LOG_FROM_ASYNC
+		future<void>		m_Fut;
+	#endif
 	
 	mutable mutex			m_QueueMutex;
 	vector<log_evt>			m_LogEvents;
