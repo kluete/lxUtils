@@ -98,9 +98,10 @@ class MainComponent : public Component, public ButtonListener, public LogSlot, p
 {
 public:
 	MainComponent(rootLog &root_log)
-		: Component("MainComponent"),
-		m_Button1("user 1"), m_Button2("user 2"), m_Button3("user 3"), m_QuitButton("Quit")
+		: m_Button1("user 1"), m_Button2("user 2"), m_Button3("user 3"), m_QuitButton("Quit")
 	{
+		uLog(APP_INIT, "MainComponent::ctor");
+		
 		m_TextCtrl.setMultiLine(true);
 		m_TextCtrl.setReadOnly(true);
 		m_TextCtrl.setCaretVisible(false);
@@ -119,10 +120,8 @@ public:
 		m_TextCtrl.setFont(Font(monofont_s, 15, Font::plain));
 		addAndMakeVisible(&m_TextCtrl);
 		
-		// m_Checklist.setFont(Font(monofont_s, 13, Font::plain));
 		m_Checklist.setModel(this);
 		m_Checklist.setRowHeight(16);
-		m_Checklist.setMultipleSelectionEnabled(true);
 		addAndMakeVisible(&m_Checklist);
 		
 		addAndMakeVisible(&m_Button1);
@@ -143,6 +142,11 @@ public:
 		root_log.Connect(this);
 		
 		uMsg("vanilla log from ui thread");
+	}
+	
+	~MainComponent()
+	{
+		uLog(DTOR, "MainComponent::DTOR");
 	}
 
 	void	buttonClicked(Button *clicked) override
@@ -178,6 +182,12 @@ public:
 
 		if (clicked == &m_QuitButton)
 		{
+			#if LOG_FROM_ASYNC
+				// manually disconnect self (ui log receiver) so we can keep logging during class destruction
+				// the file log will continue receiving events
+				DisconnectSelfSlot();
+			#endif
+		
 			JUCEApplication::quit();
 		}
 	}
@@ -321,6 +331,8 @@ public:
 	MainWindow(rootLog &root_log)
 		: DocumentWindow("freeform log", Colours::lightgrey, DocumentWindow::allButtons, true)
 	{
+		uLog(APP_INIT, "MainWindow::ctor");
+		
 		// create instance of main content component & add it to window
 		setContentOwned(new MainComponent(root_log), true);
 		centreWithSize(getWidth(), getHeight());
@@ -333,6 +345,8 @@ public:
 
 	void	closeButtonPressed() override
 	{
+		uLog(APP_INIT, "MainWindow::closeButtonPressed");
+		
 		JUCEApplication::quit();
 	}
 };
@@ -344,26 +358,28 @@ class JUCEHelloWorldApplication : public JUCEApplication
 public:
 	JUCEHelloWorldApplication()
 	{
-		m_LogImp.EnableLevels({FATAL, ERROR, WARNING, MSG});
+		m_rootLog.EnableLevels({DTOR});
+		
+		m_rootLog.EnableLevels({APP_INIT});
+		
+		m_rootLog.EnableLevels({UI_CMD});
+		m_rootLog.EnableLevels({USER1, USER2, USER3});
+
 		m_FileLog.reset(LogSlot::Create(LOG_TYPE_T::STD_FILE, "freeform.log"));
-		m_LogImp.Connect(m_FileLog.get());
-		
-		m_LogImp.EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
-		// s_LogImp.EnableLevels({DTOR});
-		
-		m_LogImp.EnableLevels({UI_CMD});
-		m_LogImp.EnableLevels({USER1, USER2, USER3});
+		m_rootLog.Connect(m_FileLog.get());
 	}
 
 	void	initialise(const String &commandLine) override
 	{
-		m_MainWindow = new MainWindow(m_LogImp);
+		uLog(APP_INIT, "JUCEApplication::initialise");
 		
-		m_MainWindow->toFront(true/*get focus*/);
+		m_MainWindow = new MainWindow(m_rootLog);
 	}
 	
 	void	shutdown() override
 	{
+		uLog(APP_INIT, "JUCEApplication::shutdown");
+		
 		m_MainWindow = nullptr;
 	}
 
@@ -388,7 +404,7 @@ public:
 
 private:
 
-	rootLog				m_LogImp;
+	rootLog				m_rootLog;
 	unique_ptr<LogSlot>		m_FileLog;
 	ScopedPointer<MainWindow>	m_MainWindow;
 };
