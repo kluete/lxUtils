@@ -1,7 +1,7 @@
 *.log
 .build_*
 .codelite
-logger.mk
+*.mk
 logger.txt
 *.bin
 Makefile

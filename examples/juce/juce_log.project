@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="juce_log" InternalType="Console">
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="src">
+    <VirtualDirectory Name="lx">
+      <File Name="../../src/color.cpp"/>
+      <File Name="../../src/ulog.cpp"/>
+      <File Name="../../src/xstring.cpp"/>
+      <File Name="../../src/xutils.cpp"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="modules">
+      <File Name="../../../../git/JUCE/modules/juce_core/juce_core.cpp"/>
+      <File Name="../../../../git/JUCE/modules/juce_data_structures/juce_data_structures.cpp"/>
+      <File Name="../../../../git/JUCE/modules/juce_events/juce_events.cpp"/>
+      <File Name="../../../../git/JUCE/modules/juce_graphics/juce_graphics.cpp"/>
+      <File Name="../../../../git/JUCE/modules/juce_gui_basics/juce_gui_basics.cpp"/>
+      <File Name="../../../../git/JUCE/modules/juce_gui_extra/juce_gui_extra.cpp"/>
+    </VirtualDirectory>
+    <File Name="main.cpp"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="inc">
+    <VirtualDirectory Name="lx">
+      <File Name="../../inc/lx/color.h"/>
+      <File Name="../../inc/lx/ulog.h"/>
+      <File Name="../../inc/lx/xstring.h"/>
+      <File Name="../../inc/lx/xutils.h"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <Settings Type="Executable">
+    <GlobalSettings>
+      <Compiler Options="-Wall;-Wfatal-errors;-Wno-parentheses;-pthread" C_Options="" Assembler="">
+        <IncludePath Value="../../inc"/>
+        <IncludePath Value="JuceLibraryCode"/>
+        <IncludePath Value="$(JUCE_DIR)"/>
+        <IncludePath Value="/usr/include/freetype2"/>
+        <Preprocessor Value="DEBUG"/>
+        <Preprocessor Value="JUCE_LINUX=1"/>
+        <Preprocessor Value="LX_JUCE=1"/>
+      </Compiler>
+      <Linker Options="-L/usr/X11R6/lib/;-lX11;-lXext;-lXinerama"/>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="clang++" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g;-O0;-std=c++14;-stdlib=libc++" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
+      <Linker Options="-stdlib=libc++" Required="yes">
+        <Library Value="dl"/>
+        <Library Value="freetype"/>
+        <Library Value="pthread"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(WorkspacePath)/jlog_clang.bin" IntermediateDirectory=".build_$(ConfigurationName)" Command="./jlog_clang.bin" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(WorkspacePath)" PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="libcxx">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="yes" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Debug gcc49" CompilerType="gnu g++ 4.9" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g;-O0;-std=c++1y" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
+      <Linker Options="" Required="yes">
+        <Library Value="dl"/>
+        <Library Value="freetype"/>
+        <Library Value="pthread"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(WorkspacePath)/jlog_gcc.bin" IntermediateDirectory=".build_$(ConfigurationName)" Command="./jlog_gcc.bin" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(WorkspacePath)" PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="yes" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>
