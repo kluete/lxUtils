@@ -25,7 +25,7 @@ Within these headers, declarations happen within their own namespace _LX_. Any l
 
 ## Examples
 
-There are UI integration examples for [JUCE](http://www.juce.com) and [wxWidgets](http://www.wxwidgets.org), respectively. The single-source app generates logs from different threads, displays them in color, and dynamically toggles filtering. A secondary file log target is created upstream.  
+There are UI integration examples for [JUCE](http://www.juce.com) and [wxWidgets](http://www.wxwidgets.org), respectively. The single-source app generates logs from different threads, displays them in color, and dynamically toggles filtering. A file log target is also created upstream.  
 
 Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.  
 
@@ -38,11 +38,11 @@ Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which 
 
 * path to JUCE source code (e.g. /usr/local/JUCE)  
 
-    \$(JUCE_DIR)
+    $(JUCE_DIR)
 
 * path to wxWidgets configuration (e.g. /usr/local/wxWidgets/lib/config/gtk2-unicode-static-3.1)  
 
-    \$(WXCONF_PATH)
+    $(WXCONF_PATH)
 
 
 ### Compiler Defines
