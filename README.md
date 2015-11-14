@@ -4,11 +4,10 @@ These files contain C++14 utilities for:
 
 * template-based sprintf() formatting à la [Bjarne Stroustrup "A Type-Safe printf"][1], see "The C++ Programming Language", 4th edition, section 28.6.1 (page 809)
 * free-form log _tags_ (instead of levels) with compile-time string hashing from [Dan Bernstein][2]
-* thread-aware logic with normalized timestamps
 
 The logger is somewhat similar to [Boost::format](http://www.boost.org/doc/libs/1_59_0/libs/format/doc/format.html) but uses the traditional printf() format flags and log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc. (like in std::unordered_set).  
 
-Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared (in an enum, say), can be used in any source file or translation unit, without worrying about initialization order (static-, thread_local- or otherwise).
+Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared (in an enum, say), can be used in any source file / translation unit, without worrying about initialization order (static-, thread_local- or otherwise). Logs can be triggered from secondary threads, possibly from within destructors.
 
 [1]: http://www.stroustrup.com/C++11FAQ.html#variadic-templates
 [2]: http://www.cse.yorku.ca/~oz/hash.html
