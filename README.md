@@ -86,7 +86,7 @@ Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which 
     \#define LOG_FROM_ASYNC 1
 
 
-## Formatting
+## Source Formatting
 
 * I use 8-char tabs, not spaces. So there.
 
