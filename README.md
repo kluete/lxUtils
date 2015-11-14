@@ -40,7 +40,7 @@ Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which 
 
     $(JUCE_DIR)
 
-* path to wxWidgets configuration (e.g. /usr/local/wxWidgets/lib/config/gtk2-unicode-static-3.1)  
+* path to wxWidgets configuration script (e.g. /usr/local/wxWidgets/lib/config/gtk2-unicode-static-3.1)  
 
     $(WXCONF_PATH)
 
