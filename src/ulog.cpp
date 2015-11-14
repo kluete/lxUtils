@@ -142,6 +142,8 @@ void	LogSignal::ClearLogAll(void)
 	assert(!s_rootLog);
 	s_rootLog = this;
 	
+	EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
+	
 	m_LastTimeStamp = timestamp_t{};
 }
 	
