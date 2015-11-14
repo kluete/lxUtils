@@ -6,12 +6,15 @@ These files contain C++14 utilities for:
 * free-form log _tags_ (instead of levels) with compile-time string hashing from [Dan Bernstein][2]
 * thread-aware logic with normalized timestamps
 
-The logger is somewhat similar to Boost::format except that log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc., like in std::unordered_set.  
+The logger is somewhat similar to [Boost::format](http://www.boost.org/doc/libs/1_59_0/libs/format/doc/format.html) but uses the traditional printf() format flags and log levels don't need to be hierarchical; they're a set of freeform _tags_ that can be ANDed, ORed, etc. (like in std::unordered_set).  
 
 Log tags are computed at compile-time in constexpr functions, so don't need to be pre-declared (in an enum, say), can be used in any source file or translation unit, without worrying about initialization order (static-, thread_local- or otherwise).
 
 [1]: http://www.stroustrup.com/C++11FAQ.html#variadic-templates
 [2]: http://www.cse.yorku.ca/~oz/hash.html
+
+
+## Overview
 
 ## Headers
 
@@ -20,7 +23,7 @@ Log tags are computed at compile-time in constexpr functions, so don't need to b
 * [xutils.h](inc/lx/xutils.h) - timestamps & misc
 * [color.h](inc/lx/color.h) - RGB color definitions for the UI (optional)
 
-Within these headers, declarations happen within their own namespace _LX_. Any local synonyms to STL types are \#used individually (not in bulk) within the LX namespace, i.e. without polluting the global namespace (see Stroustrup "The C++ Programming Language", 4th ed, Section 14.2.2: "using declarations"). 
+Within these headers, declarations happen within their own namespace _LX_. Any local synonyms to STL types are \#used individually (not in bulk) within the LX namespace, i.e. without polluting the global namespace (see Stroustrup "The C++ Programming Language", 4th ed, Section 14.2.2: "\#using declarations"). 
 
 
 ## Examples
