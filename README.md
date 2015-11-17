@@ -53,9 +53,7 @@ Within these headers, declarations happen within their own namespace _LX_. Any l
 
 There are UI integration examples for [JUCE](http://www.juce.com) and [wxWidgets](http://www.wxwidgets.org), respectively. The single-source app generates logs from different threads, displays them in color, and dynamically toggles filtering. A file log target is also created upstream.  
 
-Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.  
-
-Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake recipe shortly.
+Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake or the [CodeLite](http://www.codelite.org) IDE.
 
 
 ## Building with CMake
