@@ -104,8 +104,8 @@ public:
 	}
 	
 	explicit constexpr
-	Color(const int r, const int g, const int b, const int a = 255) noexcept
-		: Color(r * one_over_255, g * one_over_255, b * one_over_255, a * one_over_255)
+	Color(const int r_, const int g_, const int b_, const int a_ = 255) noexcept
+		: Color(r_ * one_over_255, g_ * one_over_255, b_ * one_over_255, a_ * one_over_255)
 	{
 	}
 	
