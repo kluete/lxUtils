@@ -66,11 +66,11 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
 
     $(WXCONF_PATH)
 
-* to bridge with JUCE  
+* to bridge with JUCE (juce::String, juce::Colour)  
 
     \#define LX_JUCE 1
 
-* to bridge with wxWidgets  
+* to bridge with wxWidgets (wxString, wxColour)  
 
     \#define LX_WX 1
 
