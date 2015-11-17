@@ -35,7 +35,7 @@ if (UNIX OR MINGW)
 endif (UNIX OR MINGW)
 
 # It was noticed that when using MinGW gcc it is essential that 'core' is mentioned before 'base'.
-find_package(wxWidgets COMPONENTS core base REQUIRED)
+find_package(wxWidgets COMPONENTS core base std REQUIRED)
 
 # we need wxWidgets flags to be set only for the c++ files, so we do it like this
 # by setting the CMAKE_CXX_FLAGS
@@ -51,7 +51,7 @@ add_definitions(
 )
 
 # Linker options
-execute_process(COMMAND ${LX_WX_CONFIG} --libs std OUTPUT_VARIABLE WX_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${LX_WX_CONFIG} --libs core base std OUTPUT_VARIABLE WX_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_LDFLAGS "${CMAKE_LDFLAGS}  ${WX_LD_FLAGS}")
 
@@ -69,4 +69,14 @@ set_source_files_properties(
     " -Wall -Wfatal-errors -Wno-parentheses -Wshadow -g -O0 -std=c++14")
 
 add_executable(logger ${CXX_SRCS} ${C_SRCS})
+
+if(GTK2_FOUND)
+    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+elseif (GTK3_FOUND)
+    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK3_LIBRARIES} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+else()
+    target_link_libraries(logger ${LINKER_OPTIONS} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+endif()
+
+
 
