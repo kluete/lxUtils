@@ -58,6 +58,15 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++.
 Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which generates a Makefile. There'll be a CMake recipe shortly.
 
 
+## Building with CMake
+
+### Building with wxWidgets, Clang and libc++
+
+    mkdir build && cd build
+    cmake -DWITH_WXPATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    make
+    
+
 ## Build Configuration
 
 ### Environment Variables

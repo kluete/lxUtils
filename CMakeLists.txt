@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(logger)
+project(logger_wx)
 
 include_directories(inc)
 
@@ -21,7 +21,7 @@ if (UNIX OR MINGW)
         string(SUBSTRING "${WX_VERSION}" "2" "1" wxMINOR_VERSION)
         string(SUBSTRING "${WX_VERSION}" "4" "1" wxRELEASE_NUMBER)
         if ( wxMAJOR_VERSION LESS 3 )
-        message(FATAL_ERROR "\nI'm afraid your wxWidgets version is too old.\nBuilding CodeLite requires at least wxWidgets-3.0.0")
+		message(FATAL_ERROR "\nYour wxWidgets version is too old, at least wxWidgets-3.0.0 is required")
         endif()
     endif()
     message("-- wx-config used is: ${WX_TOOL}")
@@ -56,11 +56,8 @@ execute_process(COMMAND ${LX_WX_CONFIG} --libs core base std OUTPUT_VARIABLE WX_
 set(CMAKE_LDFLAGS "${CMAKE_LDFLAGS}  ${WX_LD_FLAGS}")
 
 # Define the CXX sources
-set ( CXX_SRCS
-    src/color.cpp
-    src/ulog.cpp
-    src/xstring.cpp
-    src/xutils.cpp
+file(GLOB CXX_SRCS
+    src/*.cpp
     examples/wx/main.cpp
 )
 
@@ -68,15 +65,13 @@ set_source_files_properties(
     ${CXX_SRCS} PROPERTIES COMPILE_FLAGS 
     " -Wall -Wfatal-errors -Wno-parentheses -Wshadow -g -O0 -std=c++14")
 
-add_executable(logger ${CXX_SRCS} ${C_SRCS})
+add_executable(logger_wx ${CXX_SRCS} ${C_SRCS})
 
 if(GTK2_FOUND)
-    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+    target_link_libraries(logger_wx ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} )
 elseif (GTK3_FOUND)
-    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK3_LIBRARIES} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+    target_link_libraries(logger_wx ${LINKER_OPTIONS} ${GTK3_LIBRARIES} ${wxWidgets_LIBRARIES} )
 else()
-    target_link_libraries(logger ${LINKER_OPTIONS} ${wxWidgets_LIBRARIES} ${CLANG_LIBRARY} )
+    target_link_libraries(logger_wx ${LINKER_OPTIONS} ${wxWidgets_LIBRARIES} )
 endif()
-
-
 
