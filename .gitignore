@@ -6,3 +6,4 @@ logger.txt
 juce_log.txt
 *.bin
 Makefile
+build/
