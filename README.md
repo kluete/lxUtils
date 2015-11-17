@@ -58,8 +58,6 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
 
 ## Build Configuration
 
-### Environment Variables
-
 * path to JUCE source code (e.g. ~/development/git/JUCE)  
 
     $(JUCE_DIR)
@@ -67,9 +65,6 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
 * path to wxWidgets configuration script (e.g. ~/development/build/wx_dbg_libcxx)  
 
     $(WXCONF_PATH)
-
-
-### Compiler Defines
 
 * to bridge with JUCE  
 
@@ -100,14 +95,10 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
     make
     
 
-## Source Formatting
-
-* I use 8-char tabs, not spaces. So there.
-
-
 ## Misc
 
 * I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from.
+* source code is formatted with 8-char tabs, not spaces. So there.
 * source files inevitably end wih the comment  
     // nada mas  
   ever since I used a macro-assembler that wouldn't flush the disk cache correctly, so on crash my source files would be missing a sector's worth of data.
