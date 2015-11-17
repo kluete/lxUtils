@@ -32,6 +32,6 @@ set_source_files_properties(
 set(juce_libs X11 Xext Xinerama dl freetype pthread)
 set(CMAKE_LDFLAGS "${CMAKE_LDFLAGS} -L/usr/X11R6/lib/ ")
 
-add_executable(logger ${CXX_SRCS} ${C_SRCS})
-target_link_libraries(logger ${LINKER_OPTIONS} ${juce_libs} )
+add_executable(juce_logger ${CXX_SRCS} ${C_SRCS})
+target_link_libraries(juce_logger ${LINKER_OPTIONS} ${juce_libs} )
 

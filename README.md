@@ -86,17 +86,17 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
 
 ## Building with CMake
 
-### Building with wxWidgets, Clang and libc++
-
-    mkdir build && cd build
-    cmake -DLX_WX=1 -DWXCONF_PATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
-    make
-    
-
 ### Building with JUCE, Clang and libc++
 
     mkdir build && cd build
-    cmake -DLX_JUCE=1 -DJUCE_DIR="$LXGIT/JUCE" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    cmake -DLX_JUCE=1 -DJUCE_DIR="$LXGIT/JUCE" -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    make
+    
+
+### Building with wxWidgets, Clang and libc++
+
+    mkdir build && cd build
+    cmake -DLX_WX=1 -DWXCONF_PATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
     make
     
 

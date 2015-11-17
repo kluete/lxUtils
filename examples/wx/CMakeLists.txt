@@ -40,13 +40,13 @@ set_source_files_properties(
     ${CXX_SRCS} PROPERTIES COMPILE_FLAGS 
     " -Wall -Wfatal-errors -Wno-parentheses -Wshadow -g -O0 -std=c++14")
 
-add_executable(logger ${CXX_SRCS} )
+add_executable(wx_logger ${CXX_SRCS} )
 
 if (GTK2_FOUND)
-    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} )
+    target_link_libraries(wx_logger ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} )
 elseif (GTK3_FOUND)
-    target_link_libraries(logger ${LINKER_OPTIONS} ${GTK3_LIBRARIES} ${wxWidgets_LIBRARIES} )
+    target_link_libraries(wx_logger ${LINKER_OPTIONS} ${GTK3_LIBRARIES} ${wxWidgets_LIBRARIES} )
 else()
-    target_link_libraries(logger ${LINKER_OPTIONS} ${wxWidgets_LIBRARIES} )
+    target_link_libraries(wx_logger ${LINKER_OPTIONS} ${wxWidgets_LIBRARIES} )
 endif()
 
