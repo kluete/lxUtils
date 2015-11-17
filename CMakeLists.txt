@@ -9,6 +9,12 @@ if (WXCONF_PATH)
 endif()
 unset(WXCONF_PATH CACHE)
 
+file(GLOB core_sources
+    src/*.cpp
+)
+
+ADD_SUBDIRECTORY(examples/wx)
+
 set( LX_WX_CONFIG wx-config )
 
 if (UNIX)
@@ -37,20 +43,16 @@ add_definitions(
 
 # Linker options
 execute_process(COMMAND ${LX_WX_CONFIG} --libs core base std OUTPUT_VARIABLE WX_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 set(CMAKE_LDFLAGS "${CMAKE_LDFLAGS} ${WX_LD_FLAGS}")
 
 # Define the CXX sources
-file(GLOB CXX_SRCS
-    src/*.cpp
-    examples/wx/main.cpp
-)
+set(CXX_SRCS ${core_sources} examples/wx/main.cpp)
 
 set_source_files_properties(
     ${CXX_SRCS} PROPERTIES COMPILE_FLAGS 
     " -Wall -Wfatal-errors -Wno-parentheses -Wshadow -g -O0 -std=c++14")
 
-add_executable(logger_wx ${CXX_SRCS} ${C_SRCS})
+add_executable(logger_wx ${CXX_SRCS} )
 
 if (GTK2_FOUND)
     target_link_libraries(logger_wx ${LINKER_OPTIONS} ${GTK2_LIBRARIES} ${wxWidgets_LIBRARIES} )
