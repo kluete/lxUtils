@@ -56,31 +56,15 @@ There are UI integration examples for [JUCE](http://www.juce.com) and [wxWidgets
 Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake or the [CodeLite](http://www.codelite.org) IDE.
 
 
-## Building with CMake
-
-### Building with wxWidgets, Clang and libc++
-
-    mkdir build && cd build
-    cmake -DLX_WX=1 -DWXCONF_PATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
-    make
-    
-
-### Building with JUCE, Clang and libc++
-
-    mkdir build && cd build
-    cmake -DLX_JUCE=1 -DJUCE_DIR="$LXGIT/JUCE" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
-    make
-    
-
 ## Build Configuration
 
 ### Environment Variables
 
-* path to JUCE source code (e.g. /usr/local/JUCE)  
+* path to JUCE source code (e.g. ~/development/git/JUCE)  
 
     $(JUCE_DIR)
 
-* path to wxWidgets configuration script (e.g. /usr/local/wxWidgets/lib/config/gtk2-unicode-static-3.1)  
+* path to wxWidgets configuration script (e.g. ~/development/build/wx_dbg_libcxx)  
 
     $(WXCONF_PATH)
 
@@ -100,12 +84,28 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
     \#define LOG_FROM_ASYNC 1
 
 
+## Building with CMake
+
+### Building with wxWidgets, Clang and libc++
+
+    mkdir build && cd build
+    cmake -DLX_WX=1 -DWXCONF_PATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    make
+    
+
+### Building with JUCE, Clang and libc++
+
+    mkdir build && cd build
+    cmake -DLX_JUCE=1 -DJUCE_DIR="$LXGIT/JUCE" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    make
+    
+
 ## Source Formatting
 
 * I use 8-char tabs, not spaces. So there.
 
 
-## Factoids
+## Misc
 
 * I started writing these for a language-teaching software called "Linguamix", which is where the "lx"-prefix came from.
 * source files inevitably end wih the comment  
