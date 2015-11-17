@@ -63,7 +63,7 @@ Workspaces were created with the [CodeLite](http://www.codelite.org) IDE, which 
 ### Building with wxWidgets, Clang and libc++
 
     mkdir build && cd build
-    cmake -DWITH_WXPATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+    cmake -DWXCONF_PATH="$LXBUILD/wx_dbg_libcxx" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
     make
     
 
