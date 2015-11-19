@@ -29,12 +29,12 @@
       <ResourceCompiler Options=""/>
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="clang++" DebuggerType="LLDB Debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g;-O0;-std=c++14;-stdlib=libc++;;$(shell $(WXCONF_PATH) --cxxflags --debug=yes)" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
-      <Linker Options="$(shell $(WXCONF_PATH) --debug=yes --libs std);-stdlib=libc++" Required="yes"/>
+      <Compiler Options="-g;-O0;-std=c++14;-stdlib=libc++;;$(shell wx-config --cxxflags --debug=yes)" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
+      <Linker Options="$(shell wx-config --debug=yes --libs std);-stdlib=libc++" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(WorkspacePath)/ulog_clang.bin" IntermediateDirectory=".build_$(ConfigurationName)" Command="./ulog_clang.bin" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(WorkspacePath)" PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="libcxx">
-        <![CDATA[WXCONF_PATH=$LXBUILD/wx_dbg_libcxx/wx-config]]>
+        <![CDATA[WXDIR=$LXBUILD/wx_dbg_libcxx]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
         <DebuggerSearchPaths/>
@@ -65,12 +65,12 @@
       </Completion>
     </Configuration>
     <Configuration Name="Debug gcc49" CompilerType="gnu g++ 4.9" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="prepend" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g;-O0;$(shell $(WXCONF_PATH) --cxxflags --debug=yes);-std=c++1y" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
-      <Linker Options="$(shell $(WXCONF_PATH) --debug=yes --libs std);" Required="yes"/>
+      <Compiler Options="-g;-O0;$(shell wx-config --cxxflags --debug=yes);-std=c++1y" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
+      <Linker Options="$(shell wx-config --debug=yes --libs std);" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(WorkspacePath)/ulog_gcc.bin" IntermediateDirectory=".build_$(ConfigurationName)" Command="./ulog_gcc.bin" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(WorkspacePath)" PauseExecWhenProcTerminates="no" IsGUIProgram="yes" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
-        <![CDATA[WXCONF_PATH=$LXBUILD/wx_dbg_gcc49/wx-config]]>
+        <![CDATA[WXDIR=$LXBUILD/wx_dbg_gcc49]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
         <DebuggerSearchPaths/>

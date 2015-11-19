@@ -1,12 +1,6 @@
-if (WXCONF_PATH)
-    set(ENV{PATH} ${WXCONF_PATH}:$ENV{PATH})
-endif()
-unset(WXCONF_PATH CACHE)
-
-set( LX_WX_CONFIG wx-config )
 
 if (UNIX)
-    execute_process(COMMAND which ${LX_WX_CONFIG} OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND which wx-config OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
     if (NOT WX_TOOL)
         message(FATAL_ERROR "\nNo functional wx_config script was found in your PATH.\nIs the wxWidgets development package installed?")
     endif()
@@ -22,11 +16,11 @@ endif (UNIX)
 # when using MinGW gcc it is essential that 'core' is mentioned before 'base'
 find_package(wxWidgets COMPONENTS core base std REQUIRED)
 
-execute_process(COMMAND ${LX_WX_CONFIG} --cxxflags OUTPUT_VARIABLE WX_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND wx-config --cxxflags OUTPUT_VARIABLE WX_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WX_CXX_FLAGS}")
 
 # Linker options
-execute_process(COMMAND ${LX_WX_CONFIG} --libs core base std OUTPUT_VARIABLE WX_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND wx-config --libs core base std OUTPUT_VARIABLE WX_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_LDFLAGS "${CMAKE_LDFLAGS} ${WX_LD_FLAGS}")
 
 add_definitions(
