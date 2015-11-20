@@ -163,6 +163,18 @@ rootLog*rootLog::GetSingleton(void)
 	return s_rootLog;
 }
 
+unordered_set<LogLevel>	rootLog::GetEnabledLevels(void) const
+{
+	return m_EnabledLevelSet;
+}
+
+
+bool	rootLog::IsLevelEnabled(const LogLevel lvl) const
+{
+	return m_EnabledLevelSet.count(lvl);
+}
+
+
 //---- Has Log Level LOW-LEVEL ------------------------------------------------
 
 // static
@@ -223,6 +235,11 @@ rootLog&	rootLog::EnableLevels(const unordered_set<LogLevel> &levels)
 	m_EnabledLevelSet.insert(levels.begin(), levels.end());
 	
 	return *this;
+}
+
+rootLog&	rootLog::EnableLevel(const char *level_s)
+{
+	return EnableLevels({log_hash(level_s)});
 }
 
 //---- Disable Log Levels -----------------------------------------------------

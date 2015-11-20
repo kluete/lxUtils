@@ -130,19 +130,10 @@ public:
 	rootLog&	EnableLevels(const unordered_set<LogLevel> &enable_set);
 	rootLog&	DisableLevels(const unordered_set<LogLevel> &disable_set);
 	rootLog&	ToggleLevel(const LogLevel lvl, const bool f);
+	rootLog&	EnableLevel(const char *level_s);
 	
-	inline
-	bool	IsLevelEnabled(const LogLevel lvl) const
-	{	return m_EnabledLevelSet.count(lvl);
-	}
-	
-	inline
-	rootLog&	EnableLevel(const char *level_s)
-	{
-		return EnableLevels({log_hash(level_s)});
-	}
-	
-	unordered_set<LogLevel>	GetEnabledLevels(void) const	{return m_EnabledLevelSet;}
+	bool	IsLevelEnabled(const LogLevel lvl) const;
+	unordered_set<LogLevel>	GetEnabledLevels(void) const;
 	
 	static rootLog*	GetSingleton(void);
 	static bool	HasLogLevel_LL(const LogLevel lvl);
@@ -153,22 +144,31 @@ private:
 	unordered_set<LogLevel>		m_EnabledLevelSet;
 	mutable timestamp_t		m_LastTimeStamp;
 	
-	static rootLog			*s_rootLog;
+	static rootLog			*s_rootLog;		// no garantee on initialization order?
 	
 	// no class copy
 	rootLog(const rootLog &) = delete;
 	rootLog& operator=(const rootLog&) = delete;
 };
 
-enum BASE_LOG_T : LOG_HASH_T				// should use enum class ?
-{
-	FATAL		= "FATAL"_log,
-	ERROR		= "ERROR"_log,
-	EXCEPTION	= "EXCEPTION"_log,
-	WARNING		= "WARNING"_log,
-	MSG		= "MSG"_log,
-	DTOR		= "DTOR"_log
-};
+// these are just convenience aliases, done at compile-time hence free
+// aliasing multiple symbol names to the same hash is always ok
+// redefining the same symbol (with same hash) is ok in the same "context"
+#define BASE_LOG_MACRO(t)	constexpr auto	t = #t##_log;
+
+BASE_LOG_MACRO(	FATAL)
+BASE_LOG_MACRO(	ERROR)
+BASE_LOG_MACRO(	EXCEPTION)
+BASE_LOG_MACRO(	WARNING)
+BASE_LOG_MACRO(	MSG)
+BASE_LOG_MACRO(	DTOR)
+BASE_LOG_MACRO(	UNIT)
+BASE_LOG_MACRO(	DELAYER)
+BASE_LOG_MACRO(	APP_INIT)
+BASE_LOG_MACRO(	SIG)
+BASE_LOG_MACRO(	CROSS_THREAD)
+
+#undef BASE_LOG_MACRO
 
 } // namespace LX
 
@@ -177,7 +177,7 @@ void	uLog(const LX::LogLevel lvl, const char *fmt, Args&& ... args)
 {
 	try
 	{
-		if (!LX::rootLog::HasLogLevel_LL(lvl))	return;		// don't build log string if level disabled
+		if (!LX::rootLog::HasLogLevel_LL(lvl))	return;		// (won't preempt log string unfolding)
 			
 		const std::string	msg = LX::xsprintf(fmt, std::forward<Args>(args) ...);
 		LX::rootLog::DoULog_LL(lvl, msg);
@@ -214,21 +214,27 @@ void	uMsg(const std::string &fmt, Args&& ... args)
 }
 
 template<typename ... Args>
+void	uWarn(const std::string &fmt, Args&& ... args)
+{
+	uLog(LX::WARNING, fmt, std::forward<Args>(args) ...);
+}
+
+template<typename ... Args>
 void	uErr(const std::string &fmt, Args&& ... args)
 {
 	uLog(LX::ERROR, fmt, std::forward<Args>(args) ...);
 }
 
 template<typename ... Args>
-void	uFatal(const std::string &fmt, Args&& ... args)
+void	uExcept(const std::string &fmt, Args&& ... args)
 {
-	uLog(LX::FATAL, fmt, std::forward<Args>(args) ...);
+	uLog(LX::EXCEPTION, fmt, std::forward<Args>(args) ...);
 }
 
 template<typename ... Args>
-void	uWarn(const std::string &fmt, Args&& ... args)
+void	uFatal(const std::string &fmt, Args&& ... args)
 {
-	uLog(LX::WARNING, fmt, std::forward<Args>(args) ...);
+	uLog(LX::FATAL, fmt, std::forward<Args>(args) ...);
 }
 
 // nada mas

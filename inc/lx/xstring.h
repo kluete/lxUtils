@@ -29,7 +29,8 @@ std::string	ToLower(const std::string &s);
 std::string	ToHumanBytes(const size_t sz);
 std::string	ToHumanTime(const double secs, const bool ms_f);
 
-typedef	std::ostringstream	outstream;
+using outstream = std::ostringstream;
+
 void	xhandleprefix(const char *&s, outstream &ss);
 // no-arg specialization
 std::string	xsprintf(const char *s);
