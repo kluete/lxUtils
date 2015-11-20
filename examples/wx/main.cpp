@@ -46,8 +46,8 @@ struct log_def
 
 struct log_evt
 {
-	log_evt(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const int thread_index)
-		: m_Stamp(stamp_ms), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
+	log_evt(const timestamp_t stamp, const LogLevel level, const string &msg, const int thread_index)
+		: m_Stamp(stamp), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
 	{
 	}
 	
