@@ -69,6 +69,7 @@ enum class RGB_COLOR : uint32_t
 
 	PURPLE		= 0xFF00E7FFul,			// ! is pinkish!
 	DARK_PURPLE	= 0x800080FFul,
+	NIGHT_PURPLE	= 0x500050FFul,
 	PINK		= 0xFF92E0FFul,
 	
 	KAKI		= 0x99C700FFul,
