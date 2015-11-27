@@ -291,7 +291,7 @@ string	LX::xtimestamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt)
 
 string	LX::xdatestamp_str(const string &fmt)
 {
-	return xtimestamp_str(timestamp_t{}, fmt, STAMP_FORMAT::NO_MILLISEC);
+	return xtimestamp_str(timestamp_t{}, fmt, STAMP_FORMAT::SECOND);
 }
 
 // nada mas

@@ -29,7 +29,7 @@ double			Soft_stod(const std::string &s, const double def);
 // timestamp string format
 enum class STAMP_FORMAT : uint8_t
 {
-	NO_MILLISEC = 0,
+	SECOND = 0,
 	MILLISEC
 };
 
