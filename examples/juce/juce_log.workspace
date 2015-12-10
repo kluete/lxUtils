@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Workspace Name="juce_log" Database="./juce_log.tags" SWTLW="No">
+<CodeLite_Workspace Name="juce_log" Database="./juce_log.tags">
   <Project Name="juce_log" Path="juce_log.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
