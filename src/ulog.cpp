@@ -23,10 +23,10 @@ rootLog	*rootLog::s_rootLog = nil;
 
 	LogSlot::~LogSlot()
 {	
-	DisconnectSelfSlot();
+	DisconnectSelf();
 }	
 
-void	LogSlot::DisconnectSelfSlot(void)
+void	LogSlot::DisconnectSelf(void)
 {
 	if (!m_OrgSignal)	return;
 	
@@ -161,6 +161,16 @@ void	LogSignal::ClearLogAll(void)
 rootLog*rootLog::GetSingleton(void)
 {
 	return s_rootLog;
+}
+
+//----- Get Singleton reference -----------------------------------------------
+
+// static
+rootLog&	rootLog::Get(void)
+{
+	assert(s_rootLog);
+	
+	return *s_rootLog;
 }
 
 unordered_set<LogLevel>	rootLog::GetEnabledLevels(void) const

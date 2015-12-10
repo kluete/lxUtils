@@ -64,7 +64,7 @@ public:
 	LogSlot();
 	virtual ~LogSlot();
 
-	void	DisconnectSelfSlot(void);
+	void	DisconnectSelf(void);
 
 	virtual void	LogAtLevel(const timestamp_t stamp_ms, const LogLevel level, const string &msg) = 0;
 	virtual void	ClearLog(void)		{}
@@ -136,6 +136,7 @@ public:
 	unordered_set<LogLevel>	GetEnabledLevels(void) const;
 	
 	static rootLog*	GetSingleton(void);
+	static rootLog&	Get(void);
 	static bool	HasLogLevel_LL(const LogLevel lvl);
 	static void	DoULog_LL(const LogLevel lvl, const string &msg);
 	
