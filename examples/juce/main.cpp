@@ -60,7 +60,6 @@ struct log_evt
 
 enum ImpLogLevel : LogLevel
 {
-	CLIENT_LOG_MACRO(APP_INIT),
 	CLIENT_LOG_MACRO(UI_CMD),
 	CLIENT_LOG_MACRO(USER1),
 	CLIENT_LOG_MACRO(USER2),
@@ -97,7 +96,7 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 class MainComponent : public Component, public ButtonListener, public LogSlot, public ListBoxModel, private AsyncUpdater
 {
 public:
-	MainComponent(rootLog &root_log)
+	MainComponent()
 		: m_Button1("user 1"), m_Button2("user 2"), m_Button3("user 3"), m_QuitButton("Quit")
 	{
 		uLog(APP_INIT, "MainComponent::ctor");
@@ -139,7 +138,7 @@ public:
 		setSize(800, 600);
 		setVisible(true);
 		
-		root_log.Connect(this);
+		rootLog::Get().Connect(this);
 		
 		uMsg("vanilla log from ui thread");
 	}
@@ -185,7 +184,7 @@ public:
 			#if LOG_FROM_ASYNC
 				// manually disconnect self (ui log receiver) so we can keep logging during class destruction
 				// the file log will continue receiving events
-				DisconnectSelfSlot();
+				LogSlot::DisconnectSelf();
 			#endif
 		
 			JUCEApplication::quit();
@@ -207,10 +206,7 @@ public:
 		
 		const LogLevel	lvl = log_hash(level_s.c_str());
 			
-		auto	*rlog_p = rootLog::GetSingleton();
-		assert(rlog_p);
-		
-		const bool	enabled_f = rlog_p->IsLevelEnabled(lvl);
+		const bool	enabled_f = rootLog::Get().IsLevelEnabled(lvl);
 		
 		g.setColour(Color(enabled_f ? RGB_COLOR::SOFT_BLACK : RGB_COLOR::BRIGHT_GREY));
 		// g.setFont(m_Font);
@@ -226,12 +222,11 @@ public:
 		
 		const LogLevel	lvl = log_hash(m_Labels[row].c_str());
 		
-		auto	*rlog_p = rootLog::GetSingleton();
-		assert(rlog_p);
+		auto	&rlog = rootLog::Get();
 		
-		const bool	enabled_f = rlog_p->IsLevelEnabled(lvl);
+		const bool	enabled_f = rlog.IsLevelEnabled(lvl);
 		
-		rlog_p->ToggleLevel(lvl, !enabled_f);
+		rlog.ToggleLevel(lvl, !enabled_f);
 		
 		m_Checklist.updateContent();
 		m_Checklist.repaint();
@@ -328,13 +323,13 @@ private:
 class MainWindow : public DocumentWindow
 {
 public:
-	MainWindow(rootLog &root_log)
+	MainWindow()
 		: DocumentWindow("freeform log", Colours::lightgrey, DocumentWindow::allButtons, true)
 	{
 		uLog(APP_INIT, "MainWindow::ctor");
 		
 		// create instance of main content component & add it to window
-		setContentOwned(new MainComponent(root_log), true);
+		setContentOwned(new MainComponent(), true);
 		centreWithSize(getWidth(), getHeight());
 		setVisible(true);
 		
@@ -353,32 +348,30 @@ public:
 
 //---- App IMP ----------------------------------------------------------------
 
-class JUCEHelloWorldApplication : public JUCEApplication
+class jApp : public JUCEApplication
 {
 public:
-	JUCEHelloWorldApplication()
+	jApp()
 	{
-		m_rootLog.EnableLevels({DTOR});
-		
-		m_rootLog.EnableLevels({APP_INIT});
-		
-		m_rootLog.EnableLevels({UI_CMD});
-		m_rootLog.EnableLevels({USER1, USER2, USER3});
+		m_RootLog.EnableLevels({DTOR});
+		m_RootLog.EnableLevels({APP_INIT});
+		m_RootLog.EnableLevels({UI_CMD});
+		m_RootLog.EnableLevels({USER1, USER2, USER3});
 
 		m_FileLog.reset(LogSlot::Create(LOG_TYPE_T::STD_FILE, "freeform.log"));
-		m_rootLog.Connect(m_FileLog.get());
+		m_RootLog.Connect(m_FileLog.get());
 	}
 
 	void	initialise(const String &commandLine) override
 	{
-		uLog(APP_INIT, "JUCEApplication::initialise");
+		uLog(APP_INIT, "jApp::initialise");
 		
-		m_MainWindow = new MainWindow(m_rootLog);
+		m_MainWindow = new MainWindow();
 	}
 	
 	void	shutdown() override
 	{
-		uLog(APP_INIT, "JUCEApplication::shutdown");
+		uLog(APP_INIT, "jApp::shutdown");
 		
 		m_MainWindow = nullptr;
 	}
@@ -404,11 +397,11 @@ public:
 
 private:
 
-	rootLog				m_rootLog;
+	rootLog				m_RootLog;
 	unique_ptr<LogSlot>		m_FileLog;
 	ScopedPointer<MainWindow>	m_MainWindow;
 };
 
-START_JUCE_APPLICATION(JUCEHelloWorldApplication)
+START_JUCE_APPLICATION(jApp)
 
 // nada mas

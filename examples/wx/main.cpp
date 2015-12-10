@@ -42,28 +42,12 @@ struct log_def
 	// could also store hash but is just as well recomputed
 };
 
-// log event (storage for batch processing)
-
-struct log_evt
-{
-	log_evt(const timestamp_t stamp, const LogLevel level, const string &msg, const int thread_index)
-		: m_Stamp(stamp), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
-	{
-	}
-	
-	const timestamp_t	m_Stamp;
-	const LogLevel		m_Lvl;
-	const string		m_Msg;
-	const int		m_Thread;
-};
-
 //---- declare/hash log levels at compile time --------------------------------
 
 #define CLIENT_LOG_MACRO(arg)	arg = #arg##_log
 
 enum ImpLogLevel : LogLevel
 {
-	CLIENT_LOG_MACRO(APP_INIT),
 	CLIENT_LOG_MACRO(UI_CMD),
 	CLIENT_LOG_MACRO(USER1),
 	CLIENT_LOG_MACRO(USER2),
@@ -99,9 +83,23 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 
 class MyFrame : public wxFrame, public LogSlot
 {
+// log event (storage for batch processing)
+struct log_evt
+{
+	log_evt(const timestamp_t stamp, const LogLevel level, const string &msg, const int thread_index)
+		: m_Stamp(stamp), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
+	{
+	}
+	
+	const timestamp_t	m_Stamp;
+	const LogLevel		m_Lvl;
+	const string		m_Msg;
+	const int		m_Thread;
+};
+
 public:
-	MyFrame(const wxString &title, rootLog &root_log)
-		: wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)),
+	MyFrame()
+		: wxFrame(NULL, wxID_ANY, "freeform log", wxDefaultPosition, wxSize(800, 600)),
 		m_TextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH | wxTE_NOHIDESEL | wxTE_DONTWRAP),
 		m_CheckListBox(this, -1),
 		m_Button1(this, BUTTON_ID_1, "user 1"),
@@ -118,6 +116,8 @@ public:
 		
 		wxFont	ft(wxFontInfo(9).Family(wxFONTFAMILY_MODERN).Encoding(wxFONTENCODING_DEFAULT));
 		m_TextCtrl.SetDefaultStyle(wxTextAttr(*wxBLACK, *wxWHITE, ft));
+		
+		auto	&root_log = rootLog::Get();
 		
 		vector<string>	labels;
 		
@@ -175,7 +175,7 @@ public:
 		#if LOG_FROM_ASYNC
 			// manually disconnect self (ui log receiver) so we can keep logging during class destruction
 			// the file log will continue receiving events
-			DisconnectSelfSlot();
+			LogSlot::DisconnectSelf();
 		#endif
 		
 		uLog(APP_INIT, "MyFrame::OnClose()");
@@ -230,11 +230,8 @@ public:
 		
 		const LogLevel	lvl = log_hash(s.c_str());
 		
-		auto	*rlog_p = rootLog::GetSingleton();
-		assert(rlog_p);
-		
 		// toggle log level on/off
-		rlog_p->ToggleLevel(lvl, f);
+		rootLog::Get().ToggleLevel(lvl, f);
 		
 		e.Skip();
 	}
@@ -328,10 +325,7 @@ public:
 		
 		if (!wxApp::OnInit())        return false;		// error
 		
-		auto	*rlog_p = rootLog::GetSingleton();
-		assert(rlog_p);
-		
-		new MyFrame("freeform log", *rlog_p);
+		new MyFrame();
 		// (don't mem-manage wx resources)
 		
 		return true;
@@ -339,7 +333,7 @@ public:
 	
 	int	OnExit() override
 	{
-		uLog(DTOR, "MyApp::OnExit()");
+		uLog(APP_INIT, "MyApp::OnExit()");
 		
 		return wxApp::OnExit();
 	}
@@ -356,25 +350,24 @@ public:
 
 int	main(int argc, char* argv[])
 {
-	unique_ptr<rootLog>	logImp = make_unique<rootLog>();
-	assert(logImp);
+	rootLog	logImp;
 	
-	logImp->EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
+	logImp.EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
 	
 	// s_LogImp.EnableLevels({DTOR});
-	logImp->EnableLevels({APP_INIT});
-	logImp->EnableLevels({UI_CMD});
-	logImp->EnableLevels({USER1, USER2, USER3});
+	logImp.EnableLevels({APP_INIT});
+	logImp.EnableLevels({UI_CMD});
+	logImp.EnableLevels({USER1, USER2, USER3});
 		
 	unique_ptr<LogSlot>	file_log(LogSlot::Create(LOG_TYPE_T::STD_FILE, "freeform.log"));
 	assert(file_log);
 	
-	logImp->Connect(file_log.get());
+	logImp.Connect(file_log.get());
 		
 	uLog(APP_INIT, "main() file log created, creating wx app");
 	
 	MyApp		*wx_app = new MyApp();
-	(void)wx_app;
+	(void)wx_app;					// (don't mem-manage wx resources)
 	
 	uLog(APP_INIT, "main() wx app created, starting wx event loop");
 	
