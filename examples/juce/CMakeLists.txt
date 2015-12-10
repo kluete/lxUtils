@@ -5,12 +5,12 @@ include_directories(
     /usr/include/freetype2
 )
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -pthread")
-
 add_definitions(
     -DJUCE_LINUX=1
     -DLX_JUCE=1
 )
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -pthread")
 
 # Define the CXX sources
 file(GLOB CXX_SRCS

@@ -83,7 +83,7 @@ Binaries build for Clang/libc++ and g++ 4.9.1 with libstdc++, either with CMake 
 
 ```cmake
 mkdir build && cd build
-cmake -DLX_JUCE=1 -DJUCE_DIR=../../../git/JUCE -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+cmake -DLX_JUCE=1 -DJUCE_DIR="$PWD../../../git/JUCE" -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
 make
 ```
 
@@ -92,6 +92,14 @@ make
 ```cmake
 mkdir build && cd build
 cmake -DLX_WX=1 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
+make
+```
+
+or something like    
+
+```cmake
+mkdir build && cd build
+export WXDIR="$LXBUILD/wx_dbg_libcxx" && cmake -DLX_WX=1 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" ..
 make
 ```
 
