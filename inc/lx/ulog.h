@@ -23,16 +23,6 @@ using std::thread;
 using std::vector;
 using std::unordered_set;
 
-using LX::timestamp_t;
-
-// based on Daniel "djb" Bernstein's hasher (http://www.cse.yorku.ca/~oz/hash.html)
-template<typename _intype>
-constexpr
-_intype	djb2_hash_impl(const char* text, _intype prev_hash)
-{
-	return text[0] == '\0' ? prev_hash : djb2_hash_impl(&text[1], prev_hash * 33 ^ static_cast<_intype>(text[0]));
-}
-
 using LOG_HASH_T = uint32_t;			// 32-bit is enough?
 
 constexpr
