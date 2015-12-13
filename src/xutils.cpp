@@ -118,6 +118,14 @@ timestamp_t	timestamp_t::FromSecs(const double &secs)
 }
 
 // static
+timestamp_t	timestamp_t::FromMS(const double &ms)
+{
+	const int64_t	usecs = ms * 1'000;
+	
+	return timestamp_t(usecs);
+}
+
+// static
 timestamp_t	timestamp_t::Now(void)
 {
 	return timestamp_t{};
@@ -226,7 +234,34 @@ string	timestamp_t::elap_str(void) const
 	return ss.str();
 }
 
-string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt) const
+namespace LX
+{
+
+uint32_t raw(STAMP_FORMAT o)
+{
+	return static_cast<uint32_t>(o);
+}
+
+STAMP_FORMAT operator ~ (STAMP_FORMAT o)
+{
+	return STAMP_FORMAT(~raw(o));
+}
+
+STAMP_FORMAT operator | (STAMP_FORMAT a, STAMP_FORMAT b)
+{
+	return STAMP_FORMAT(raw(a) | raw(b));
+}
+
+STAMP_FORMAT operator & (STAMP_FORMAT a, STAMP_FORMAT b)
+{
+	return STAMP_FORMAT(raw(a) & raw(b));
+}
+
+} // namespace LX
+
+//---- timestamp string (class member) ----------------------------------------
+
+string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT stamp_fmt) const
 {
 	return xtimestamp_str(*this, fmt, stamp_fmt);
 }
@@ -235,7 +270,7 @@ string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt) 
 
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
 
-string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT &stamp_fmt)
+string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT stamp_fmt)
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
@@ -247,7 +282,9 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
-		const std::tm		*tm_p = std::localtime(&secs);				// thread-safe?
+		const bool	utc_f = (stamp_fmt == (stamp_fmt | STAMP_FORMAT::UTC));
+		
+		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe
 		assert(tm_p);
 		
 		const size_t	len = strftime(buff, sizeof(buff), fmt.c_str(), tm_p); 
@@ -256,7 +293,9 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 		
 		string	s {buff, len};
 		
-		if (stamp_fmt == STAMP_FORMAT::MILLISEC)
+		const bool	ms_f = (stamp_fmt == (stamp_fmt | STAMP_FORMAT::MILLISEC));
+		
+		if (ms_f)
 		{
 			const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 
@@ -282,7 +321,7 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 
 //---- timestamp string (wrapper) ---------------------------------------------
 
-string	LX::xtimestamp_str(const string &fmt, const STAMP_FORMAT &stamp_fmt)
+string	LX::xtimestamp_str(const string &fmt, const STAMP_FORMAT stamp_fmt)
 {
 	return xtimestamp_str(timestamp_t{}, fmt, stamp_fmt);
 }

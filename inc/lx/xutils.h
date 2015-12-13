@@ -35,11 +35,16 @@ int	Soft_stoi(const std::string &s, const int def);
 double	Soft_stod(const std::string &s, const double def);
 
 // timestamp string format
-enum class STAMP_FORMAT : uint8_t
+enum class STAMP_FORMAT : uint32_t
 {
-	SECOND = 0,
-	MILLISEC
+	SECOND		= 0,
+	MILLISEC	= 1,
+	UTC		= 16		// universal time coordinates (ignore TZ)
 };
+
+STAMP_FORMAT operator ~ (STAMP_FORMAT);
+STAMP_FORMAT operator | (STAMP_FORMAT, STAMP_FORMAT);
+STAMP_FORMAT operator & (STAMP_FORMAT, STAMP_FORMAT);
 
 //---- Timestamp --------------------------------------------------------------
 
@@ -55,6 +60,7 @@ public:
 	
 	static timestamp_t	Now(void);
 	static timestamp_t	FromSecs(const double &secs);
+	static timestamp_t	FromMS(const double &ms);
 	static timestamp_t	FromDMS(const int64_t &dms);
 	static timestamp_t	FromDUS(const int64_t &dus);
 	static timestamp_t	FromBigBang(void);
@@ -81,7 +87,7 @@ public:
 	double		elap_secs(void) const;
 	std::string	elap_str(void) const;
 
-	std::string	stamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC) const;
+	std::string	stamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC) const;
 
 	void		reset(void);		// (only non-const function)
 
@@ -96,8 +102,8 @@ private:
 	std::int64_t	m_usecs;		// would be faster w/ const ?
 };
 
-std::string	xtimestamp_str(const timestamp_t &stamp, const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC);
-std::string	xtimestamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT &stamp_fmt = STAMP_FORMAT::MILLISEC);
+std::string	xtimestamp_str(const timestamp_t &stamp, const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
+std::string	xtimestamp_str(const std::string &fmt = "%H:%M:%S:", const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
 std::string	xdatestamp_str(const std::string &fmt = "%Y-%m-%d_%H:%M:%S");
 
 void	xtrap(const char *s = nullptr);
