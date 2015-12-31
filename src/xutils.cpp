@@ -264,20 +264,26 @@ STAMP_FORMAT operator & (STAMP_FORMAT a, STAMP_FORMAT b)
 	return STAMP_FORMAT(raw(a) & raw(b));
 }
 
+bool	operator <  (STAMP_FORMAT a, STAMP_FORMAT b)
+{
+	return (raw(a) < raw(b));
+}
+
+
 } // namespace LX
 
 //---- timestamp string (class member) ----------------------------------------
 
-string	timestamp_t::stamp_str(const string &fmt, const STAMP_FORMAT stamp_fmt) const
+string	timestamp_t::stamp_str(const STAMP_FORMAT stamp_fmt) const
 {
-	return xtimestamp_str(*this, fmt, stamp_fmt);
+	return xtimestamp_str(*this, stamp_fmt);
 }
 
 //---- build timestamp STRING -------------------------------------------------
 
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
 
-string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STAMP_FORMAT stamp_fmt)
+string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT stamp_fmt)
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
@@ -285,55 +291,42 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 	{
 		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc ?
 		
+		size_t	index = 0;
+		
 		const int64_t		t_us = stamp.GetUSecs();
 		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
-		const bool	utc_f = (stamp_fmt == (stamp_fmt | STAMP_FORMAT::UTC));
+		const bool	utc_f = false;
 		
-		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe
+		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe -- could compute TZ delta ONCE?
 		assert(tm_p);
 		
-		const size_t	len = strftime(buff, sizeof(buff), fmt.c_str(), tm_p); 
-		assert(len > 0);
-		assert(len <= sizeof(buff));
-		
-		// should PRE-ALLOCATE string asap
-		string	s {buff, len};
-		
-		const STAMP_FORMAT	sfmt_loc = stamp_fmt & ~STAMP_FORMAT::UTC;
-		
-		const bool	ms_f = ((sfmt_loc & (STAMP_FORMAT::MILLISEC | STAMP_FORMAT::MICROSEC)) != STAMP_FORMAT::SECOND);
-		if (ms_f)
+		if (stamp_fmt <= STAMP_FORMAT::YYMMDD)
 		{
-			const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
-
-			char	digit_buff[8];				// writes 8 bytes on x86 ???
-			
-			::memset(&digit_buff[0], 0, sizeof(digit_buff));
-
-			const size_t	ms_len = snprintf(digit_buff, sizeof(digit_buff), ":%03u", remain_ms);
-			assert(ms_len > 0);
-			assert(ms_len <= sizeof(digit_buff));
-			
-			s.append(digit_buff, 4);
-		
-			const bool	us_f = ((sfmt_loc & STAMP_FORMAT::MICROSEC) == STAMP_FORMAT::MICROSEC);
-			if (us_f)
-			{
-				const unsigned int	remain_us = t_us % 1'000ul;
-
-				::memset(&digit_buff[0], 0, sizeof(digit_buff));
-
-				const size_t	us_len = snprintf(digit_buff, sizeof(digit_buff), ":%03u", remain_us);
-				assert(us_len > 0);
-				assert(us_len <= sizeof(digit_buff));
-				
-				s.append(digit_buff, 4);
-			}
+			index += strftime(buff, sizeof(buff), "%Y-%m-%d ", tm_p);
 		}
 		
-		return s;
+		if (stamp_fmt >= STAMP_FORMAT::HHMMSS)
+		{
+			index += strftime(buff + index, sizeof(buff), "%H:%M:%S", tm_p);
+		}
+		
+		const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
+		
+		if (stamp_fmt >= STAMP_FORMAT::MILLISEC)
+		{
+			index += snprintf(buff + index, sizeof(buff), ":%03u", remain_ms);
+		}
+		
+		const unsigned int	remain_us = t_us % 1'000ul;
+		
+		if (stamp_fmt >= STAMP_FORMAT::MICROSEC)
+		{
+			index += snprintf(buff + index, sizeof(buff), ":%03u", remain_us);
+		}
+		
+		return string(buff, buff + index);
 	}
 	catch (...)
 	{
@@ -344,16 +337,16 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 
 //---- timestamp string (wrapper) ---------------------------------------------
 
-string	LX::xtimestamp_str(const string &fmt, const STAMP_FORMAT stamp_fmt)
+string	LX::xtimestamp_str(const STAMP_FORMAT fmt)
 {
-	return xtimestamp_str(timestamp_t{}, fmt, stamp_fmt);
+	return xtimestamp_str(timestamp_t{}, fmt);
 }
 
 //---- datestamp string -------------------------------------------------------
 
-string	LX::xdatestamp_str(const string &fmt)
+string	LX::xdatestamp_str(void)
 {
-	return xtimestamp_str(timestamp_t{}, fmt, STAMP_FORMAT::SECOND);
+	return xtimestamp_str(timestamp_t{}, STAMP_FORMAT::YYMMDD);
 }
 
 // nada mas
