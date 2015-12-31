@@ -107,7 +107,13 @@ int64_t	timestamp_t::NowMicroSecs(void)
 	timestamp_t::timestamp_t()
 		: timestamp_t(NowMicroSecs())
 {
-}	
+}
+
+// static
+timestamp_t	timestamp_t::FromUS(const int64_t &us)
+{
+	return timestamp_t(us);
+}
 
 // static
 timestamp_t	timestamp_t::FromSecs(const double &secs)
@@ -199,6 +205,7 @@ double	timestamp_t::delta_secs(const timestamp_t &old_stamp) const	{return delta
 
 
 int64_t	timestamp_t::GetUSecs(void) const noexcept	{return m_usecs;}
+
 int64_t	timestamp_t::GetIntSecs(void) const 		{return GetUSecs() / 1'000'000;}
 double	timestamp_t::GetSecs(void) const		{return GetUSecs() / 1'000'000.0;}
 
@@ -291,23 +298,39 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const string &fmt, const STA
 		assert(len > 0);
 		assert(len <= sizeof(buff));
 		
+		// should PRE-ALLOCATE string asap
 		string	s {buff, len};
 		
-		const bool	ms_f = (stamp_fmt == (stamp_fmt | STAMP_FORMAT::MILLISEC));
+		const STAMP_FORMAT	sfmt_loc = stamp_fmt & ~STAMP_FORMAT::UTC;
 		
+		const bool	ms_f = ((sfmt_loc & (STAMP_FORMAT::MILLISEC | STAMP_FORMAT::MICROSEC)) != STAMP_FORMAT::SECOND);
 		if (ms_f)
 		{
 			const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 
-			char	ms_buff[8];				// writes 8 bytes on x86 ???
+			char	digit_buff[8];				// writes 8 bytes on x86 ???
 			
-			::memset(&ms_buff[0], 0, sizeof(ms_buff));
+			::memset(&digit_buff[0], 0, sizeof(digit_buff));
 
-			const size_t	ms_len = snprintf(ms_buff, sizeof(ms_buff), "%03ud", remain_ms);
+			const size_t	ms_len = snprintf(digit_buff, sizeof(digit_buff), ":%03u", remain_ms);
 			assert(ms_len > 0);
-			assert(ms_len <= sizeof(ms_buff));
+			assert(ms_len <= sizeof(digit_buff));
 			
-			s.append(ms_buff, 3);
+			s.append(digit_buff, 4);
+		
+			const bool	us_f = ((sfmt_loc & STAMP_FORMAT::MICROSEC) == STAMP_FORMAT::MICROSEC);
+			if (us_f)
+			{
+				const unsigned int	remain_us = t_us % 1'000ul;
+
+				::memset(&digit_buff[0], 0, sizeof(digit_buff));
+
+				const size_t	us_len = snprintf(digit_buff, sizeof(digit_buff), ":%03u", remain_us);
+				assert(us_len > 0);
+				assert(us_len <= sizeof(digit_buff));
+				
+				s.append(digit_buff, 4);
+			}
 		}
 		
 		return s;
