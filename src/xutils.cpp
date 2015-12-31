@@ -305,25 +305,30 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT stamp_fmt
 		if (stamp_fmt <= STAMP_FORMAT::YYMMDD)
 		{
 			index += strftime(buff, sizeof(buff), "%Y-%m-%d ", tm_p);
+			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
 		if (stamp_fmt >= STAMP_FORMAT::HHMMSS)
 		{
-			index += strftime(buff + index, sizeof(buff), "%H:%M:%S", tm_p);
+			index += strftime(buff + index, sizeof(buff) - index, "%H:%M:%S", tm_p);
+			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
 		const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 		
 		if (stamp_fmt >= STAMP_FORMAT::MILLISEC)
 		{
-			index += snprintf(buff + index, sizeof(buff), ":%03u", remain_ms);
+			index += snprintf(buff + index, sizeof(buff) - index, ":%03u", remain_ms);
+			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
 		const unsigned int	remain_us = t_us % 1'000ul;
 		
 		if (stamp_fmt >= STAMP_FORMAT::MICROSEC)
 		{
-			index += snprintf(buff + index, sizeof(buff), ":%03u", remain_us);
+			index += snprintf(buff + index, sizeof(buff) - index, ":%03u", remain_us);
+			assert(index < MAX_TIME_STAMP_CHARS);
+			
 		}
 		
 		return string(buff, buff + index);
