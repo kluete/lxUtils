@@ -71,7 +71,7 @@ int	LX::Soft_stoi(const string &s, const int def)
 {
 	try
 	{	
-		if (s.empty())		return def;
+		if (s.empty())	return def;
 		
 		const int	v = stoi(s);
 		return v;
@@ -264,51 +264,49 @@ STAMP_FORMAT operator & (STAMP_FORMAT a, STAMP_FORMAT b)
 	return STAMP_FORMAT(raw(a) & raw(b));
 }
 
-bool	operator <  (STAMP_FORMAT a, STAMP_FORMAT b)
+bool	HasFlag(STAMP_FORMAT a, STAMP_FORMAT b)
 {
-	return (raw(a) < raw(b));
+	return ((raw(a) & raw(b)) != 0);
 }
-
 
 } // namespace LX
 
 //---- timestamp string (class member) ----------------------------------------
 
-string	timestamp_t::stamp_str(const STAMP_FORMAT stamp_fmt) const
+string	timestamp_t::str(const STAMP_FORMAT fmt) const
 {
-	return xtimestamp_str(*this, stamp_fmt);
+	return xtimestamp_str(*this, fmt);
 }
 
 //---- build timestamp STRING -------------------------------------------------
 
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
 
-string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT stamp_fmt)
+string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
 	try
 	{
 		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc ?
-		
 		size_t	index = 0;
 		
 		const int64_t		t_us = stamp.GetUSecs();
 		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
-		const bool	utc_f = false;
+		const bool	utc_f = HasFlag(fmt, STAMP_FORMAT::UTC);
 		
 		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe -- could compute TZ delta ONCE?
 		assert(tm_p);
 		
-		if (stamp_fmt <= STAMP_FORMAT::YYMMDD)
+		if (HasFlag(fmt, STAMP_FORMAT::YMD))
 		{
 			index += strftime(buff, sizeof(buff), "%Y-%m-%d ", tm_p);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
-		if (stamp_fmt >= STAMP_FORMAT::HHMMSS)
+		if (HasFlag(fmt, STAMP_FORMAT::HMS))
 		{
 			index += strftime(buff + index, sizeof(buff) - index, "%H:%M:%S", tm_p);
 			assert(index < MAX_TIME_STAMP_CHARS);
@@ -316,19 +314,18 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT stamp_fmt
 		
 		const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 		
-		if (stamp_fmt >= STAMP_FORMAT::MILLISEC)
+		if (HasFlag(fmt, STAMP_FORMAT::MS))
 		{
 			index += snprintf(buff + index, sizeof(buff) - index, ":%03u", remain_ms);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
-		const unsigned int	remain_us = t_us % 1'000ul;
-		
-		if (stamp_fmt >= STAMP_FORMAT::MICROSEC)
+		if (HasFlag(fmt, STAMP_FORMAT::US))
 		{
+			const unsigned int	remain_us = t_us % 1'000ul;
+		
 			index += snprintf(buff + index, sizeof(buff) - index, ":%03u", remain_us);
 			assert(index < MAX_TIME_STAMP_CHARS);
-			
 		}
 		
 		return string(buff, buff + index);
@@ -351,7 +348,7 @@ string	LX::xtimestamp_str(const STAMP_FORMAT fmt)
 
 string	LX::xdatestamp_str(void)
 {
-	return xtimestamp_str(timestamp_t{}, STAMP_FORMAT::YYMMDD);
+	return xtimestamp_str(timestamp_t{}, STAMP_FORMAT::YMD);
 }
 
 // nada mas

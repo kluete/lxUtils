@@ -37,16 +37,21 @@ double	Soft_stod(const std::string &s, const double def);
 // timestamp string format
 enum class STAMP_FORMAT : uint32_t
 {
-	YYMMDD = 0,
-	HHMMSS,
-	MILLISEC,
-	MICROSEC
+	YMD		= 1ul << 0,
+	HMS		= 1ul << 1,
+	MS		= 1ul << 2,
+	US		= 1ul << 3,
+	UTC		= 1ul << 4,
+	
+	SECOND		= (YMD | HMS),
+	MILLISEC	= (HMS | MS),
+	MICROSEC	= (HMS | MS | US),
 };
 
 STAMP_FORMAT operator ~ (STAMP_FORMAT);				// useless?
 STAMP_FORMAT operator | (STAMP_FORMAT, STAMP_FORMAT);
 STAMP_FORMAT operator & (STAMP_FORMAT, STAMP_FORMAT);
-bool		operator <  (STAMP_FORMAT, STAMP_FORMAT);
+bool	HasFlag(STAMP_FORMAT, STAMP_FORMAT);
 
 //---- Timestamp --------------------------------------------------------------
 
@@ -92,7 +97,7 @@ public:
 	double		elap_secs(void) const;
 	std::string	elap_str(void) const;
 
-	std::string	stamp_str(const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC) const;
+	std::string	str(const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC) const;
 
 	void		reset(void);		// (only non-const function)
 
