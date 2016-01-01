@@ -61,7 +61,7 @@ public:
 	
 	bool		IsMainThread(void) const;
 	
-	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn);
+	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
 
 private:
 

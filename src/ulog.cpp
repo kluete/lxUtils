@@ -282,8 +282,10 @@ class FileLog : public LogSlot
 {
 public:
 	// ctor
-	FileLog(const string &fname)
-		: LogSlot{}, m_OFS {fname, ios_base::trunc}
+	FileLog(const string &fname, const STAMP_FORMAT fmt)
+		: LogSlot{},
+		m_Fmt(fmt),
+		m_OFS {fname, ios_base::trunc}
 	{
 		assert(m_OFS && m_OFS.is_open());
 	}
@@ -298,29 +300,30 @@ public:
 		if (!IsMainThread())
 		{
 			// OFF-THREAD
-			m_OFS << xtimestamp_str(stamp) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl << flush;
+			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl << flush;
 		}
 		else
-		{	m_OFS << xtimestamp_str(stamp) << " " << msg << endl;
+		{	m_OFS << stamp.str(m_Fmt) << " " << msg << endl;
 		
 		}
 	}
 	
 private:
 	
-	ofstream	m_OFS;
-	mutable mutex	m_Mutex;
+	const STAMP_FORMAT	m_Fmt;
+	ofstream		m_OFS;
+	mutable mutex		m_Mutex;
 };
 
 //---- instantiate ------------------------------------------------------------
 
-LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn)
+LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT fmt)
 {
 	switch (log_t)
 	{
 		case LOG_TYPE_T::STD_FILE:
 		
-			return new FileLog(fn);
+			return new FileLog(fn, fmt);
 			break;
 		
 		default:
