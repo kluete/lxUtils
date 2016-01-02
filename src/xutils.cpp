@@ -302,12 +302,17 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
 		
 		if (HasFlag(fmt, STAMP_FORMAT::YMD))
 		{
-			index += strftime(buff, sizeof(buff), "%Y-%m-%d ", tm_p);
+			index += strftime(buff, sizeof(buff), "%Y-%m-%d", tm_p);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
 		if (HasFlag(fmt, STAMP_FORMAT::HMS))
 		{
+			if (HasFlag(fmt, STAMP_FORMAT::YMD))
+			{
+				buff[index++] = ' ';
+			}
+			
 			index += strftime(buff + index, sizeof(buff) - index, "%H:%M:%S", tm_p);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}

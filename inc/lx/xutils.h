@@ -97,7 +97,7 @@ public:
 	double		elap_secs(void) const;
 	std::string	elap_str(void) const;
 
-	std::string	str(const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC) const;
+	std::string	str(const STAMP_FORMAT fmt = STAMP_FORMAT::MILLISEC) const;
 
 	void		reset(void);		// (only non-const function)
 
@@ -112,8 +112,8 @@ private:
 	std::int64_t	m_usecs;		// would be faster w/ const ?
 };
 
-std::string	xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
-std::string	xtimestamp_str(const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
+std::string	xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt = STAMP_FORMAT::MILLISEC);
+std::string	xtimestamp_str(const STAMP_FORMAT fmt = STAMP_FORMAT::MILLISEC);
 std::string	xdatestamp_str(void);
 
 void	xtrap(const char *s = nullptr);
