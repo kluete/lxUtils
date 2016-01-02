@@ -69,9 +69,9 @@ unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 	LOG_DEF_MACRO(WARNING,		ORANGE),
 	LOG_DEF_MACRO(MSG,		BLACK),
 	LOG_DEF_MACRO(DTOR,		BROWN),
+	LOG_DEF_MACRO(APP_INIT,		NIGHT_BLUE),
 	
 	// client log levels
-	LOG_DEF_MACRO(APP_INIT,		NIGHT_BLUE),
 	LOG_DEF_MACRO(UI_CMD,		GREEN),
 	LOG_DEF_MACRO(USER1,		PURPLE),
 	LOG_DEF_MACRO(USER2,		BLUE),
@@ -262,7 +262,7 @@ private:
 		for (const auto &e : m_LogEvents)
 		{
 			const string	thread_s = (e.m_Thread > 0) ? xsprintf(" THR[%1d]", e.m_Thread) : "";
-			const string	s = xsprintf("%s%s %s\n", xtimestamp_str(e.m_Stamp), thread_s, e.m_Msg);
+			const string	s = xsprintf("%s%s %s\n", e.m_Stamp.str(STAMP_FORMAT::MILLISEC), thread_s, e.m_Msg);
 			
 			const RGB_COLOR	clr = s_LogLevelDefMap.count(e.m_Lvl) ? s_LogLevelDefMap.at(e.m_Lvl).m_Color : RGB_COLOR::BLACK;
 			m_TextCtrl.SetDefaultStyle(wxTextAttr(*Color(clr).ToWxColor()));
