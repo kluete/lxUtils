@@ -114,9 +114,12 @@ public:
 		
 		std::sort(m_Labels.begin(), m_Labels.end());
 
-		const string	monofont_s = Font::getDefaultMonospacedFontName().toStdString();
+		#if JUCE_LINUX
+			m_TextCtrl.setFont(Font("DejaVu Sans Mono", "Book", 15));
+		#else
+			m_TextCtrl.setFont(Font(Font::getDefaultMonospacedFontName(), 15, Font::plain));
+		#endif
 		
-		m_TextCtrl.setFont(Font(monofont_s, 15, Font::plain));
 		addAndMakeVisible(&m_TextCtrl);
 		
 		m_Checklist.setModel(this);
@@ -247,7 +250,7 @@ private:
 		// queue
 		m_LogEvents.emplace_back(stamp, level, msg, thread_index);
 		
-		// trigger dequeue on main thread
+		// trigger dequeue on original thread
 		triggerAsyncUpdate();
 	}
 	
