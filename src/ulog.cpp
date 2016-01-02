@@ -143,8 +143,6 @@ void	LogSignal::ClearLogAll(void)
 	s_rootLog = this;
 	
 	EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
-	
-	m_LastTimeStamp = timestamp_t{};
 }
 	
 //---- DTOR -------------------------------------------------------------------
@@ -215,16 +213,6 @@ void	rootLog::DoULog(const LogLevel lvl, const string &msg)
 	// need MUTEX ?
 	
 	const LX::timestamp_t	now{};
-	const int64_t		elap_ms = m_LastTimeStamp.elap_ms();
-	m_LastTimeStamp = now;
-	
-	const size_t	dsec = elap_ms / 1000;
-	if (dsec > 1)
-	{	// time separator string (1 dot/sec)
-		const string	time_sep((dsec > 80) ? 80 : dsec, '.');
-		
-		EmitAll(now, lvl, time_sep);				// doesn't actually have a level???
-	}
 	
 	EmitAll(now, lvl, msg);
 }

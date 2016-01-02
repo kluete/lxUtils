@@ -133,7 +133,6 @@ public:
 private:
 
 	unordered_set<LogLevel>		m_EnabledLevelSet;
-	mutable timestamp_t		m_LastTimeStamp;
 	
 	static rootLog			*s_rootLog;		// no garantee on initialization order?
 	
