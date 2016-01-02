@@ -23,28 +23,12 @@ const int	BUTT_W = 100;
 const int	BUTT_H = 32;
 const int	BUTT_MARGIN = 10;
 
-// log level/ID definition (label, color) -------------------------------------
-
-struct log_def
-{
-	log_def(const string &label, const RGB_COLOR &clr)
-		: m_Label(label), m_Color(clr)
-	{}
-	
-	log_def(const log_def&) = default;
-	log_def& operator=(const log_def&) = default;
-	
-	const string	m_Label;
-	const RGB_COLOR	m_Color;
-	// could also store hash but is just as well recomputed
-};
-
 // log event (storage for batch processing)
 
 struct log_evt
 {
-	log_evt(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const int thread_index)
-		: m_Stamp(stamp_ms), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
+	log_evt(const timestamp_t stamp, const LogLevel level, const string &msg, const int thread_index)
+		: m_Stamp(stamp), m_Lvl(level), m_Msg(msg), m_Thread(thread_index)
 	{
 	}
 	
@@ -67,29 +51,45 @@ enum ImpLogLevel : LogLevel
 };	
 #undef CLIENT_LOG_MACRO
 
+// log level/ID definition (label, color) -------------------------------------
+
+struct log_def
+{
+	log_def(const string &label, const RGB_COLOR &clr)
+		: m_Label(label), m_Color(clr)
+	{}
+	
+	log_def(const log_def&) = default;
+	log_def& operator=(const log_def&) = default;
+	
+	const string	m_Label;
+	const RGB_COLOR	m_Color;
+	// could also store hash but is just as well recomputed
+};
+
 //---- Log level definition table ---------------------------------------------
 
-#define LOG_DEF_MACRO(t, clr)	{t, log_def(#t, RGB_COLOR::clr)}
+#define LOG_DEF(t, clr)	{t, log_def(#t, RGB_COLOR::clr)}
 
 static const
 unordered_map<LogLevel, log_def>	s_LogLevelDefMap
 {
 	// core / built-in log levels
-	LOG_DEF_MACRO(FATAL,		NIGHT_RED),
-	LOG_DEF_MACRO(ERROR,		RED),
-	LOG_DEF_MACRO(EXCEPTION,	BLUE),
-	LOG_DEF_MACRO(WARNING,		ORANGE),
-	LOG_DEF_MACRO(MSG,		BLACK),
-	LOG_DEF_MACRO(DTOR,		BROWN),
+	LOG_DEF(FATAL,		NIGHT_RED),
+	LOG_DEF(ERROR,		RED),
+	LOG_DEF(EXCEPTION,	BLUE),
+	LOG_DEF(WARNING,	ORANGE),
+	LOG_DEF(MSG,		BLACK),
+	LOG_DEF(DTOR,		BROWN),
+	LOG_DEF(APP_INIT,	NIGHT_BLUE),
 	
 	// client log levels
-	LOG_DEF_MACRO(APP_INIT,		NIGHT_BLUE),
-	LOG_DEF_MACRO(UI_CMD,		MID_GREEN),
-	LOG_DEF_MACRO(USER1,		PURPLE),
-	LOG_DEF_MACRO(USER2,		BLUE),
-	LOG_DEF_MACRO(USER3,		CYAN),
+	LOG_DEF(UI_CMD,		MID_GREEN),
+	LOG_DEF(USER1,		PURPLE),
+	LOG_DEF(USER2,		BLUE),
+	LOG_DEF(USER3,		CYAN),
 };
-#undef LOG_DEF_MACRO
+#undef LOG_DEF
 
 //---- Main Component ---------------------------------------------------------
 
@@ -260,7 +260,7 @@ private:
 		for (const auto &e : m_LogEvents)
 		{
 			const string	thread_s = (e.m_Thread > 0) ? xsprintf(" THR[%1d]", e.m_Thread) : "";
-			const string	s = xsprintf("%s%s %s\n", xtimestamp_str(e.m_Stamp), thread_s, e.m_Msg);
+			const string	s = xsprintf("%s%s %s\n", e.m_Stamp.str(STAMP_FORMAT::MICROSEC), thread_s, e.m_Msg);
 			
 			const RGB_COLOR	clr = s_LogLevelDefMap.count(e.m_Lvl) ? s_LogLevelDefMap.at(e.m_Lvl).m_Color : RGB_COLOR::BLACK;
 			
