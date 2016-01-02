@@ -264,25 +264,23 @@ STAMP_FORMAT operator & (STAMP_FORMAT a, STAMP_FORMAT b)
 	return STAMP_FORMAT(raw(a) & raw(b));
 }
 
-bool	HasFlag(STAMP_FORMAT a, STAMP_FORMAT b)
+bool	operator!(STAMP_FORMAT o)
 {
-	return ((raw(a) & raw(b)) != 0);
+	return (raw(o) == 0);
+}
+
+bool	any(STAMP_FORMAT o)
+{
+	return !!o;
 }
 
 } // namespace LX
-
-//---- timestamp string (class member) ----------------------------------------
-
-string	timestamp_t::str(const STAMP_FORMAT fmt) const
-{
-	return xtimestamp_str(*this, fmt);
-}
 
 //---- build timestamp STRING -------------------------------------------------
 
 	// could theoretically use format flag "%q" or "%Q" for millisecs but may barf depending on platform/country ?
 
-string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
+string	timestamp_t::str(const STAMP_FORMAT fmt0) const
 {
 	const size_t	MAX_TIME_STAMP_CHARS = 128;
 	
@@ -291,24 +289,26 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
 		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc ?
 		size_t	index = 0;
 		
-		const int64_t		t_us = stamp.GetUSecs();
+		const int64_t		t_us = GetUSecs();
 		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
-		const bool	utc_f = HasFlag(fmt, STAMP_FORMAT::UTC);
+		const bool	utc_f = any(fmt0 & STAMP_FORMAT::UTC);
 		
-		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe -- could compute TZ delta ONCE?
+		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe (could compute TZ delta ONCE?)
 		assert(tm_p);
 		
-		if (HasFlag(fmt, STAMP_FORMAT::YMD))
+		const STAMP_FORMAT	fmt = fmt0 & ~STAMP_FORMAT::UTC;
+		
+		if (any(fmt & STAMP_FORMAT::YMD))
 		{
 			index += strftime(buff, sizeof(buff), "%Y-%m-%d", tm_p);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
-		if (HasFlag(fmt, STAMP_FORMAT::HMS))
+		if (any(fmt & STAMP_FORMAT::HMS))
 		{
-			if (HasFlag(fmt, STAMP_FORMAT::YMD))
+			if (any(fmt & STAMP_FORMAT::YMD))
 			{
 				buff[index++] = ' ';
 			}
@@ -319,13 +319,13 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
 		
 		const unsigned int	remain_ms = (t_us - ((int64_t) secs * 1'000'000ul)) / 1'000ul;		// must typecast UP or goes to shit on x32
 		
-		if (HasFlag(fmt, STAMP_FORMAT::MS))
+		if (any(fmt & STAMP_FORMAT::MS))
 		{
 			index += snprintf(buff + index, sizeof(buff) - index, ":%03u", remain_ms);
 			assert(index < MAX_TIME_STAMP_CHARS);
 		}
 		
-		if (HasFlag(fmt, STAMP_FORMAT::US))
+		if (any(fmt & STAMP_FORMAT::US))
 		{
 			const unsigned int	remain_us = t_us % 1'000ul;
 		
@@ -340,20 +340,6 @@ string	LX::xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt)
 		// apparently fickly
 		assert(0);
 	}
-}
-
-//---- timestamp string (wrapper) ---------------------------------------------
-
-string	LX::xtimestamp_str(const STAMP_FORMAT fmt)
-{
-	return xtimestamp_str(timestamp_t{}, fmt);
-}
-
-//---- datestamp string -------------------------------------------------------
-
-string	LX::xdatestamp_str(void)
-{
-	return xtimestamp_str(timestamp_t{}, STAMP_FORMAT::YMD);
 }
 
 // nada mas

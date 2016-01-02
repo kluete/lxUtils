@@ -51,7 +51,7 @@ enum class STAMP_FORMAT : uint32_t
 STAMP_FORMAT operator ~ (STAMP_FORMAT);				// useless?
 STAMP_FORMAT operator | (STAMP_FORMAT, STAMP_FORMAT);
 STAMP_FORMAT operator & (STAMP_FORMAT, STAMP_FORMAT);
-bool	HasFlag(STAMP_FORMAT, STAMP_FORMAT);
+bool	operator!(STAMP_FORMAT);
 
 //---- Timestamp --------------------------------------------------------------
 
@@ -111,10 +111,6 @@ private:
 
 	std::int64_t	m_usecs;		// would be faster w/ const ?
 };
-
-std::string	xtimestamp_str(const timestamp_t &stamp, const STAMP_FORMAT fmt = STAMP_FORMAT::MILLISEC);
-std::string	xtimestamp_str(const STAMP_FORMAT fmt = STAMP_FORMAT::MILLISEC);
-std::string	xdatestamp_str(void);
 
 void	xtrap(const char *s = nullptr);
 
