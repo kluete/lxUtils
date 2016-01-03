@@ -340,6 +340,8 @@ string	timestamp_t::str(const STAMP_FORMAT fmt0) const
 		// apparently fickly
 		assert(0);
 	}
+	
+	return string("<failed>");
 }
 
 // nada mas
