@@ -17,7 +17,7 @@ rootLog	*rootLog::s_rootLog = nil;
 //==== Log Slot (may have multiple) ===========================================
 
 	LogSlot::LogSlot()
-		: m_OrgSignal{nil}, m_ThreadID(this_thread::get_id())
+		: m_OrgSignal{nil}
 {
 }
 
@@ -51,13 +51,6 @@ void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const
 	if (!m_OrgSignal)	return;		// was already disconnected
 	
 	LogAtLevel(stamp, level, msg);
-}
-
-bool	LogSlot::IsMainThread(void) const
-{
-	const bool	f = (m_ThreadID == this_thread::get_id());
-	
-	return f;
 }
 
 //==== Log Signal (currently singleton) =======================================
@@ -113,7 +106,8 @@ void	LogSignal::DisconnectAll(void)
 
 void	LogSignal::EmitAll(const timestamp_t stamp, const LogLevel level, const string &msg) const
 {
-	// need MUTEX ? if re-logs from a signal would lock up
+	// need MUTEX ?
+	//   NO: if re-logs from a signal would lock up (?)
 	
 	for (LogSlot *slot : m_SlotList)
 	{
@@ -273,6 +267,7 @@ public:
 	FileLog(const string &fname, const STAMP_FORMAT fmt)
 		: LogSlot{},
 		m_Fmt(fmt),
+		m_ThreadID(this_thread::get_id()),
 		m_OFS {fname, ios_base::trunc}
 	{
 		assert(m_OFS && m_OFS.is_open());
@@ -280,27 +275,27 @@ public:
 	// dtor
 	virtual ~FileLog()	{}
 	
-	// LogSlot IMP
+	// IMP
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
 	{
 		unique_lock<mutex>	locker(m_Mutex);
 		
-		if (!IsMainThread())
+		if (this_thread::get_id() != m_ThreadID)
 		{
 			// OFF-THREAD
-			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl << flush;
+			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl;
 		}
 		else
 		{	m_OFS << stamp.str(m_Fmt) << " " << msg << endl;
-		
 		}
 	}
 	
 private:
 	
 	const STAMP_FORMAT	m_Fmt;
-	ofstream		m_OFS;
+	const thread::id	m_ThreadID;
 	mutable mutex		m_Mutex;
+	ofstream		m_OFS;
 };
 
 //---- instantiate ------------------------------------------------------------

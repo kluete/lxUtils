@@ -59,8 +59,6 @@ public:
 	virtual void	LogAtLevel(const timestamp_t stamp_ms, const LogLevel level, const string &msg) = 0;
 	virtual void	ClearLog(void)		{}
 	
-	bool		IsMainThread(void) const;
-	
 	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
 
 private:
@@ -72,8 +70,6 @@ private:
 	void	RemoveSignal(void);
 	
 	LogSignal		*m_OrgSignal;
-	
-	const thread::id	m_ThreadID;
 	
 	// no class copy
 	LogSlot(const LogSlot &) = delete;
