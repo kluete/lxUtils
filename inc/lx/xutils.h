@@ -31,6 +31,8 @@ struct EnumClassHash
 	}
 };
 
+using EnumHash = EnumClassHash;
+
 int	Soft_stoi(const std::string &s, const int def);
 double	Soft_stod(const std::string &s, const double def);
 

@@ -47,10 +47,13 @@ enum class RGB_COLOR : uint32_t
 	DARK_GREEN	= 0x008000FFul,
 	NIGHT_GREEN	= 0x005000FFul,
 	LIGHT_GREEN	= 0x80FF80FFul,
+	PALE_GREEN	= 0xA0FFA0FFul,
+	WAFER_GREEN	= 0xC0FFC0FFul,
 	BRIGHT_GREEN	= 0x14FF96FFul,
 
 	BLUE		= 0x0000FFFFul,
 	LIGHT_BLUE	= 0xECF0FFFFul,
+	WAFER_BLUE	= 0xF8F8FFFFul,		// ("it's wafer-thin")
 	DARK_BLUE	= 0x0000C0FFul,
 	NIGHT_BLUE	= 0x000080FFul,
 	MID_BLUE	= 0x8080FFFFul,
@@ -77,6 +80,13 @@ enum class RGB_COLOR : uint32_t
 	KAKI		= 0x99C700FFul,
 	BROWN		= 0xC75D00FFul,
 	DARK_BROWN	= 0x632E00FFul,
+	
+	BAR_OUTLINE		= 0x898999fful,
+	BAR_GRADIENT_TOP	= 0xfbfbfcfful,
+	BAR_GRADIENT_BOTTOM	= 0xd4d4dffful,
+	BAR_MEDIAN		= 0xe8e8effful,
+	BAR_BEVEL_NORTH_WEST	= 0xfffffffful,
+	BAR_BEVEL_SOUTH_EAST	= 0xc4c4cffful,
 };
 
 //---- Color ------------------------------------------------------------------
