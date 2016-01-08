@@ -96,6 +96,16 @@ Color	Color::Normalized(const double &scale) const
 	return Color(r() * f, g() * f, b() * f, 1.0);
 }
 
+Color	Color::Mix(const Color &o, const double a) const
+{
+	const double	r = m_r + ((o.r() - m_r) * a);
+	const double	g = m_g + ((o.g() - m_g) * a);
+	const double	b = m_b + ((o.b() - m_b) * a);
+	const double	a2 = m_a + ((o.a() - m_a) * a);
+	
+	return Color(r, g, b, a2);
+}
+
 //---- JUCE glue --------------------------------------------------------------
 
 #if LX_JUCE

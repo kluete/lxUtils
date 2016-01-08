@@ -39,6 +39,7 @@ enum class RGB_COLOR : uint32_t
 	RED		= 0xFF0000FFul,
 	DARK_RED	= 0xC00000FFul,
 	BRIGHT_RED	= 0xFF1414FFul,
+	CRIMSON_RED	= 0xDC143CFFul,		// (permanent insurance)
 	LIGHT_RED	= 0xFFF0F0FFul,
 	NIGHT_RED	= 0x800000FFul,
 	
@@ -187,6 +188,7 @@ public:
 	Color	Scale(double fact) const;
 	Color	Scaled(double rf, double gf, double bf) const;
 	Color	ChangeLightness(const double &lum_perc) const;
+	Color	Mix(const Color &o, const double a) const;
 	
 	Color	with_r(const double &r_) const;
 	Color	with_g(const double &g_) const;
