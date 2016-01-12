@@ -59,7 +59,7 @@ public:
 	virtual void	LogAtLevel(const timestamp_t stamp_ms, const LogLevel level, const string &msg) = 0;
 	virtual void	ClearLog(void)		{}
 	
-	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC);
+	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC, const double min_elap_secs = 3.0);
 
 private:
 

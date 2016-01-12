@@ -264,9 +264,10 @@ class FileLog : public LogSlot
 {
 public:
 	// ctor
-	FileLog(const string &fname, const STAMP_FORMAT fmt)
+	FileLog(const string &fname, const STAMP_FORMAT fmt, const double min_elap_secs)
 		: LogSlot{},
 		m_Fmt(fmt),
+		m_MinSepElapSecs(min_elap_secs),
 		m_ThreadID(this_thread::get_id()),
 		m_OFS {fname, ios_base::trunc}
 	{
@@ -279,6 +280,16 @@ public:
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
 	{
 		unique_lock<mutex>	locker(m_Mutex);
+		
+		const double	delta_secs = std::min(stamp.delta_secs(m_LastStamp), 80.0);
+		m_LastStamp = stamp;
+		
+		if (delta_secs > m_MinSepElapSecs)
+		{
+			const string	sep_s = string((size_t)delta_secs, '-');
+			
+			m_OFS << sep_s << endl;
+		}
 		
 		if (this_thread::get_id() != m_ThreadID)
 		{
@@ -293,20 +304,22 @@ public:
 private:
 	
 	const STAMP_FORMAT	m_Fmt;
+	const double		m_MinSepElapSecs;
 	const thread::id	m_ThreadID;
 	mutable mutex		m_Mutex;
 	ofstream		m_OFS;
+	timestamp_t		m_LastStamp;
 };
 
 //---- instantiate ------------------------------------------------------------
 
-LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT fmt)
+LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT fmt, const double min_elap_secs)
 {
 	switch (log_t)
 	{
 		case LOG_TYPE_T::STD_FILE:
 		
-			return new FileLog(fn, fmt);
+			return new FileLog(fn, fmt, min_elap_secs);
 			break;
 		
 		default:
