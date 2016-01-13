@@ -96,14 +96,14 @@ Color	Color::Normalized(const double &scale) const
 	return Color(r() * f, g() * f, b() * f, 1.0);
 }
 
-Color	Color::Mix(const Color &o, const double a) const
+Color	Color::Mix(const Color &o, const double mix) const
 {
-	const double	r = m_r + ((o.r() - m_r) * a);
-	const double	g = m_g + ((o.g() - m_g) * a);
-	const double	b = m_b + ((o.b() - m_b) * a);
-	const double	a2 = m_a + ((o.a() - m_a) * a);
+	const double	r2 = m_r + ((o.r() - m_r) * mix);
+	const double	g2 = m_g + ((o.g() - m_g) * mix);
+	const double	b2 = m_b + ((o.b() - m_b) * mix);
+	const double	a2 = m_a + ((o.a() - m_a) * mix);
 	
-	return Color(r, g, b, a2);
+	return Color(r2, g2, b2, a2);
 }
 
 //---- JUCE glue --------------------------------------------------------------
