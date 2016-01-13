@@ -113,13 +113,13 @@ class Color
 public:
 	// ctors
 	explicit constexpr
-	Color(const double r_, const double g_, const double b_, const double a_ = 1.0) noexcept
+	Color(const double r_, const double g_, const double b_, const double a_) noexcept
 		: m_r(clamp01(r_)), m_g(clamp01(g_)), m_b(clamp01(b_)), m_a(clamp01(a_))		// (auto-clamped)
 	{
 	}
 	
 	explicit constexpr
-	Color(const int r_, const int g_, const int b_, const int a_ = 255) noexcept
+	Color(const int r_, const int g_, const int b_, const int a_) noexcept
 		: Color(r_ * one_over_255, g_ * one_over_255, b_ * one_over_255, a_ * one_over_255)
 	{
 	}
