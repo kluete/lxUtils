@@ -286,19 +286,29 @@ string	timestamp_t::str(const STAMP_FORMAT fmt0) const
 	
 	try
 	{
-		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but more EXPENSIVE than static alloc ?
+		/*
+		static
+		int	s_dTZ = 100;
+		
+		if (100 == s_dTZ)	s_dTZ = 0;						// (could compute TZ delta ONCE?)
+		*/
+		
+		char	buff[MAX_TIME_STAMP_CHARS];						// thread-safe but SLOWER
 		size_t	index = 0;
 		
 		const int64_t		t_us = GetUSecs();
-		
 		const std::time_t	secs = t_us / 1'000'000ul;
 		
-		const bool	utc_f = any(fmt0 & STAMP_FORMAT::UTC);
-		
-		const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// apparently NOT thread-safe (could compute TZ delta ONCE?)
-		assert(tm_p);
-		
+		const bool		utc_f = any(fmt0 & STAMP_FORMAT::UTC);
 		const STAMP_FORMAT	fmt = fmt0 & ~STAMP_FORMAT::UTC;
+		
+		std::tm	tm_struct;
+
+		// const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// NOT thread-safe
+		if (utc_f)	gmtime_r(&secs, &tm_struct);
+		else		localtime_r(&secs, &tm_struct);
+		
+		const auto	tm_p = &tm_struct;
 		
 		if (any(fmt & STAMP_FORMAT::YMD))
 		{
