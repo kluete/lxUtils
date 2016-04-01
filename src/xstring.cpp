@@ -31,6 +31,7 @@
 #include <type_traits>
 #include <cmath>
 #include <iomanip>
+#include <iterator>			// for back_inserter on Windows
 
 #include "lx/xutils.h"
 

@@ -302,13 +302,16 @@ string	timestamp_t::str(const STAMP_FORMAT fmt0) const
 		const bool		utc_f = any(fmt0 & STAMP_FORMAT::UTC);
 		const STAMP_FORMAT	fmt = fmt0 & ~STAMP_FORMAT::UTC;
 		
-		std::tm	tm_struct;
-
-		// const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// NOT thread-safe
-		if (utc_f)	gmtime_r(&secs, &tm_struct);
-		else		localtime_r(&secs, &tm_struct);
-		
-		const auto	tm_p = &tm_struct;
+		#ifdef WIN32
+			const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// NOT thread-safe
+		#else
+			std::tm	tm_struct;
+			
+			if (utc_f)	gmtime_r(&secs, &tm_struct);
+			else		localtime_r(&secs, &tm_struct);
+			
+			const auto	tm_p = &tm_struct;
+		#endif		
 		
 		if (any(fmt & STAMP_FORMAT::YMD))
 		{
