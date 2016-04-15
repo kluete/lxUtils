@@ -136,7 +136,7 @@ void	LogSignal::ClearLogAll(void)
 	assert(!s_rootLog);
 	s_rootLog = this;
 	
-	EnableLevels({FATAL, EXCEPTION, ERROR, WARNING, MSG});
+	EnableLevels({FATAL, EXCEPTION, LX_ERROR, WARNING, LX_MSG});		// msvc++ noise with PCH
 }
 	
 //---- DTOR -------------------------------------------------------------------
@@ -311,6 +311,58 @@ private:
 	timestamp_t		m_LastStamp;
 };
 
+//---- Cout Log ---------------------------------------------------------------
+
+class CoutLog : public LogSlot
+{
+public:
+	// ctor
+	CoutLog(const string &fname, const STAMP_FORMAT fmt, const double min_elap_secs)
+		: LogSlot{},
+		m_Fmt(fmt),
+		m_MinSepElapSecs(min_elap_secs),
+		m_ThreadID(this_thread::get_id()),
+		m_OS{std::cout}
+	{
+	}
+	// dtor
+	virtual ~CoutLog()	{}
+	
+	// IMP
+	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
+	{
+		unique_lock<mutex>	locker(m_Mutex);
+		
+		const double	delta_secs = std::min(stamp.delta_secs(m_LastStamp), 80.0);
+		m_LastStamp = stamp;
+		
+		if (delta_secs > m_MinSepElapSecs)
+		{
+			const string	sep_s = string((size_t)delta_secs, '-');
+			
+			m_OS << sep_s << endl;
+		}
+		
+		if (this_thread::get_id() != m_ThreadID)
+		{
+			// OFF-THREAD
+			m_OS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl;
+		}
+		else
+		{	m_OS << stamp.str(m_Fmt) << " " << msg << endl;
+		}
+	}
+	
+private:
+	
+	const STAMP_FORMAT	m_Fmt;
+	const double		m_MinSepElapSecs;
+	const thread::id	m_ThreadID;
+	mutable mutex		m_Mutex;
+	ostream			&m_OS;
+	timestamp_t		m_LastStamp;
+};
+
 //---- instantiate ------------------------------------------------------------
 
 LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT fmt, const double min_elap_secs)
@@ -320,6 +372,11 @@ LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_F
 		case LOG_TYPE_T::STD_FILE:
 		
 			return new FileLog(fn, fmt, min_elap_secs);
+			break;
+
+		case LOG_TYPE_T::STD_COUT:
+
+			return new CoutLog(fn, fmt, min_elap_secs);
 			break;
 		
 		default:

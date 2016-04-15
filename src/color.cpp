@@ -145,7 +145,7 @@ Color	Color::Mix(const Color &o, const double mix) const
 	// return unique_ptr
 	unique_ptr<wxColour>	Color::ToWxColor(void) const
 	{
-		return make_unique<wxColour>(r() * 255.0, g() * 255.0, b() * 255.0, a() * 255.0);
+		return make_unique<wxColour>(wxColour(r() * 255.0, g() * 255.0, b() * 255.0, a() * 255.0));
 	}
 
 #endif // LX_WX

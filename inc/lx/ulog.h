@@ -42,6 +42,7 @@ using LogLevel = LOG_HASH_T;
 enum class LOG_TYPE_T : int
 {
 	STD_FILE = 1,
+	STD_COUT,
 };
 
 //---- Log Slot ---------------------------------------------------------------
@@ -143,10 +144,10 @@ private:
 #define BASE_LOG_MACRO(t)	constexpr auto	t = #t##_log;
 
 BASE_LOG_MACRO(	FATAL)
-BASE_LOG_MACRO(	ERROR)
+BASE_LOG_MACRO(	LX_ERROR)			// win32 noise inside PCH
 BASE_LOG_MACRO(	EXCEPTION)
 BASE_LOG_MACRO(	WARNING)
-BASE_LOG_MACRO(	MSG)
+BASE_LOG_MACRO(	LX_MSG)
 BASE_LOG_MACRO(	DTOR)
 BASE_LOG_MACRO(	UNIT)
 BASE_LOG_MACRO(	DELAYER)
@@ -197,7 +198,7 @@ void	uLog(const char lvl_s[], const char *fmt, Args&& ... args)
 template<typename ... Args>
 void	uMsg(const std::string &fmt, Args&& ... args)
 {
-	uLog(LX::MSG, fmt, std::forward<Args>(args) ...);
+	uLog(LX::LX_MSG, fmt, std::forward<Args>(args) ...);
 }
 
 template<typename ... Args>
@@ -209,7 +210,7 @@ void	uWarn(const std::string &fmt, Args&& ... args)
 template<typename ... Args>
 void	uErr(const std::string &fmt, Args&& ... args)
 {
-	uLog(LX::ERROR, fmt, std::forward<Args>(args) ...);
+	uLog(LX::LX_ERROR, fmt, std::forward<Args>(args) ...);
 }
 
 template<typename ... Args>
