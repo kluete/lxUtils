@@ -27,6 +27,10 @@ enum class RGB_COLOR : uint32_t
 	WHITE		= 0xFFFFFFFFul,
 	NO_COLOR	= 0x00000000ul,
 	LX_TRANSPARENT	= 0x00000000ul,			// Microsoft sucks ass
+	
+	#ifndef _WIN32
+		TRANSPARENT	= LX_TRANSPARENT,
+	#endif
 
 	SOFT_BLACK	= 0x0A0A0AFFul,
 	DARK_GREY	= 0x404040FFul,
