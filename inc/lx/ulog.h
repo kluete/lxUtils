@@ -153,7 +153,9 @@ BASE_LOG_MACRO(	UNIT)
 BASE_LOG_MACRO(	DELAYER)
 BASE_LOG_MACRO(	APP_INIT)
 BASE_LOG_MACRO(	SIG)
-BASE_LOG_MACRO(	CROSS_THREAD)
+	#pragma warning(disable:4307)
+	BASE_LOG_MACRO(	CROSS_THREAD)		// for some reason is only one msvc++ 2015 complains about
+	#pragma warning(default:4307)
 BASE_LOG_MACRO(	JUCE_LOG)
 
 #undef BASE_LOG_MACRO
