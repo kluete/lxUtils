@@ -14,7 +14,7 @@ template<typename _intype>
 constexpr
 _intype	djb2_hash_impl(const char* text, _intype prev_hash)
 {
-	return text[0] == '\0' ? prev_hash : djb2_hash_impl(&text[1], prev_hash * 33 ^ static_cast<_intype>(text[0]));
+	return text[0] == '\0' ? prev_hash : djb2_hash_impl(&text[1], prev_hash * 33ull ^ static_cast<_intype>(text[0]));
 }
 	
 #ifndef nil
