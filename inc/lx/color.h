@@ -138,7 +138,7 @@ public:
 	Color	FromRGBA32(const uint32_t rgba32) noexcept
 	{
 		#if 0
-			// g++ 4.9.1 doesn't support full c++14 constexpr ? (works fine in clang)
+			// g++ 4.9.1 doesn't support full c++14 constexpr ? (works fine in clang and g++ 5.3)
 			const int	ri(comp(rgba32, 3));
 			const int	gi(comp(rgba32, 2));
 			const int	bi(comp(rgba32, 1));
@@ -150,7 +150,6 @@ public:
 					comp(rgba32, 2),
 					comp(rgba32, 1),
 					comp(rgba32, 0));
-					
 		#endif
 	}
 	
