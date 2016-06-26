@@ -11,6 +11,8 @@
 using namespace std;
 using namespace LX;
 
+std::once_flag s_root_log_once_f;
+
 // static
 rootLog	*rootLog::s_rootLog = nil;
 
@@ -46,11 +48,11 @@ void	LogSlot::RemoveSignal(void)
 	m_OrgSignal = nil;
 }
 
-void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const string &msg) 
+void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) 
 {
 	if (!m_OrgSignal)	return;		// was already disconnected
 	
-	LogAtLevel(stamp, level, msg);
+	LogAtLevel(stamp, level, msg, thread_id);
 }
 
 //==== Log Signal (currently singleton) =======================================
@@ -58,6 +60,8 @@ void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const
 	LogSignal::LogSignal()
 		: m_SlotList{}
 {
+	// assign 1st thread
+	GetThreadIndex(this_thread::get_id());
 }
 	
 	LogSignal::~LogSignal()
@@ -100,28 +104,33 @@ void	LogSignal::DisconnectAll(void)
 	}
 }
 
+//---- Get/update Thread Index ------------------------------------------------
+
+size_t	LogSignal::GetThreadIndex(const thread::id thread_id) const
+{
+	unique_lock<mutex>	locker(m_Mutex);
+	
+	if (!m_ThreadIdMap.count(thread_id))
+		m_ThreadIdMap.emplace(thread_id, m_ThreadIdMap.size());
+		
+	const size_t	thread_index = m_ThreadIdMap.at(thread_id);
+	
+	return thread_index;
+}
+
 //---- Emit All ---------------------------------------------------------------
 
 	// triggers all connected slots
 
-void	LogSignal::EmitAll(const timestamp_t stamp, const LogLevel level, const string &msg) const
+void	LogSignal::EmitAll(const timestamp_t stamp, const LogLevel level, const string &msg, const thread::id thread_id) const
 {
 	// need MUTEX ?
 	//   NO: if re-logs from a signal would lock up (?)
+	const size_t	thread_index = GetThreadIndex(thread_id);
 	
 	for (LogSlot *slot : m_SlotList)
 	{
-		slot->LogAtLevel_LL(stamp, level, msg);
-	}
-}
-
-//---- Clear Log All ----------------------------------------------------------
-
-void	LogSignal::ClearLogAll(void)
-{
-	for (LogSlot *slot : m_SlotList)
-	{
-		slot->ClearLog();
+		slot->LogAtLevel_LL(stamp, level, msg, thread_index);
 	}
 }
 
@@ -133,8 +142,10 @@ void	LogSignal::ClearLogAll(void)
 		: m_EnabledLevelSet{}
 {
 	// (singleton)
-	assert(!s_rootLog);
-	s_rootLog = this;
+	// assert(!s_rootLog);
+	// s_rootLog = this;
+	
+	call_once(s_root_log_once_f, [](rootLog *rl){s_rootLog = rl;}, this);
 	
 	EnableLevels({FATAL, EXCEPTION, LX_ERROR, WARNING, LX_MSG});		// msvc++ noise with PCH
 }
@@ -204,11 +215,12 @@ void	rootLog::DoULog(const LogLevel lvl, const string &msg)
 {
 	if (!IsLevelEnabled(lvl))		return;		// level not enabled
 	
-	// need MUTEX ?
+	// need MUTEX ? -- NO, can re-enter???
 	
 	const LX::timestamp_t	now{};
+	const thread::id	tid = this_thread::get_id();
 	
-	EmitAll(now, lvl, msg);
+	EmitAll(now, lvl, msg, tid);
 }
 
 //---- Clear All Log Levels ---------------------------------------------------
@@ -268,7 +280,6 @@ public:
 		: LogSlot{},
 		m_Fmt(fmt),
 		m_MinSepElapSecs(min_elap_secs),
-		m_ThreadID(this_thread::get_id()),
 		m_OFS {fname, ios_base::trunc}
 	{
 		assert(m_OFS && m_OFS.is_open());
@@ -277,7 +288,7 @@ public:
 	virtual ~FileLog()	{}
 	
 	// IMP
-	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
+	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) override
 	{
 		unique_lock<mutex>	locker(m_Mutex);
 		
@@ -291,10 +302,10 @@ public:
 			m_OFS << sep_s << endl;
 		}
 		
-		if (this_thread::get_id() != m_ThreadID)
+		if (thread_id > 0)
 		{
 			// OFF-THREAD
-			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl;
+			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << thread_id << " : " << msg << endl;
 		}
 		else
 		{	m_OFS << stamp.str(m_Fmt) << " " << msg << endl;
@@ -305,7 +316,6 @@ private:
 	
 	const STAMP_FORMAT	m_Fmt;
 	const double		m_MinSepElapSecs;
-	const thread::id	m_ThreadID;
 	mutable mutex		m_Mutex;
 	ofstream		m_OFS;
 	timestamp_t		m_LastStamp;
@@ -321,7 +331,6 @@ public:
 		: LogSlot{},
 		m_Fmt(fmt),
 		m_MinSepElapSecs(min_elap_secs),
-		m_ThreadID(this_thread::get_id()),
 		m_OS{std::cout}
 	{
 	}
@@ -329,7 +338,7 @@ public:
 	virtual ~CoutLog()	{}
 	
 	// IMP
-	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg) override
+	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) override
 	{
 		unique_lock<mutex>	locker(m_Mutex);
 		
@@ -343,10 +352,10 @@ public:
 			m_OS << sep_s << endl;
 		}
 		
-		if (this_thread::get_id() != m_ThreadID)
+		if (thread_id > 0)
 		{
 			// OFF-THREAD
-			m_OS << stamp.str(m_Fmt) << " _THREAD " << hex << this_thread::get_id() << " : " << msg << endl;
+			m_OS << stamp.str(m_Fmt) << " _THREAD " << hex << thread_id << " : " << msg << endl;
 		}
 		else
 		{	m_OS << stamp.str(m_Fmt) << " " << msg << endl;
@@ -357,7 +366,6 @@ private:
 	
 	const STAMP_FORMAT	m_Fmt;
 	const double		m_MinSepElapSecs;
-	const thread::id	m_ThreadID;
 	mutable mutex		m_Mutex;
 	ostream			&m_OS;
 	timestamp_t		m_LastStamp;

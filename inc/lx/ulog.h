@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <stdexcept>
 #include <thread>
+#include <mutex>
 
 #include "lx/xutils.h"
 #include "lx/xstring.h"
@@ -19,9 +20,11 @@ namespace LX
 class LogSignal;
 
 using std::string;
-using std::thread;
 using std::vector;
 using std::unordered_set;
+using std::unordered_map;
+using std::thread;
+using std::mutex;
 
 using LOG_HASH_T = uint32_t;			// 32-bit is enough?
 
@@ -57,16 +60,17 @@ public:
 
 	void	DisconnectSelf(void);
 
-	virtual void	LogAtLevel(const timestamp_t stamp_ms, const LogLevel level, const string &msg) = 0;
-	virtual void	ClearLog(void)		{}
+	virtual void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) = 0;
 	
+	// shouldn't be here?
 	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC, const double min_elap_secs = 3.0);
 
 private:
 
 	// accessed by signal
-	void	LogAtLevel_LL(const timestamp_t stamp_ms, const LogLevel level, const string &msg);
+	void	LogAtLevel_LL(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const size_t thread_id);
 	
+	// shouldn't be here?
 	void	SetSignal(LogSignal *sig);
 	void	RemoveSignal(void);
 	
@@ -87,15 +91,20 @@ public:
 
 	void	Connect(LogSlot *slot);
 	void	Disconnect(LogSlot *slot);
-
-	void	EmitAll(const timestamp_t stamp_us, const LogLevel level, const string &msg) const;
-	void	ClearLogAll(void);
+	
+	// shouldn't be here?
+	void	EmitAll(const timestamp_t stamp, const LogLevel level, const string &msg, const thread::id thread_id) const;
 	
 private:
 
 	void	DisconnectAll(void);
-
-	vector<LogSlot*>	m_SlotList;
+	
+	size_t	GetThreadIndex(const thread::id tread_id) const;			// not really CONST!!
+	
+	vector<LogSlot*>			m_SlotList;
+	
+	mutable	mutex					m_Mutex;
+	mutable unordered_map<thread::id, size_t>	m_ThreadIdMap;
 
 	// no class copy
 	LogSignal(const LogSignal &) = delete;
