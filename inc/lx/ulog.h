@@ -62,15 +62,13 @@ public:
 
 	virtual void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) = 0;
 	
-	// shouldn't be here?
+	// shouldn't be here? -- should be MEMBER of log SIGNAL?
 	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC, const double min_elap_secs = 3.0);
 
 private:
 
-	// accessed by signal
+	// accessed by signal -- shouldn't be here?
 	void	LogAtLevel_LL(const timestamp_t stamp_ms, const LogLevel level, const string &msg, const size_t thread_id);
-	
-	// shouldn't be here?
 	void	SetSignal(LogSignal *sig);
 	void	RemoveSignal(void);
 	
