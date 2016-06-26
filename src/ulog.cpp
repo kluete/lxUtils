@@ -13,8 +13,8 @@ using namespace LX;
 
 std::once_flag s_root_log_once_f;
 
-// static
-rootLog	*rootLog::s_rootLog = nil;
+static
+rootLog*	s_rootLog = nil;
 
 //==== Log Slot (may have multiple) ===========================================
 
@@ -142,9 +142,6 @@ void	LogSignal::EmitAll(const timestamp_t stamp, const LogLevel level, const str
 		: m_EnabledLevelSet{}
 {
 	// (singleton)
-	// assert(!s_rootLog);
-	// s_rootLog = this;
-	
 	call_once(s_root_log_once_f, [](rootLog *rl){s_rootLog = rl;}, this);
 	
 	EnableLevels({FATAL, EXCEPTION, LX_ERROR, WARNING, LX_MSG});		// msvc++ noise with PCH

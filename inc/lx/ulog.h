@@ -138,8 +138,6 @@ private:
 
 	unordered_set<LogLevel>		m_EnabledLevelSet;
 	
-	static rootLog			*s_rootLog;		// no garantee on initialization order?
-	
 	// no class copy
 	rootLog(const rootLog &) = delete;
 	rootLog& operator=(const rootLog&) = delete;
