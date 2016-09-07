@@ -39,8 +39,8 @@ void	LX::xtrap(const char *s)
 		::kill(0, SIGTRAP);	// (copied from Juce)
 	#endif
 	
-	#ifdef __MINGW64__
-		assert(0);
+	#ifdef WIN32
+		DebugBreak();
 	#endif
 }
 
