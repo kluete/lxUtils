@@ -148,6 +148,10 @@ private:
 // redefining the same symbol (with same hash) is ok in the same "context"
 #define BASE_LOG_MACRO(t)	constexpr auto	t = #t##_log;
 
+#ifdef WIN32
+	#pragma warning(disable:4307)
+#endif
+
 BASE_LOG_MACRO(	FATAL)
 BASE_LOG_MACRO(	LX_ERROR)			// win32 noise inside PCH
 BASE_LOG_MACRO(	EXCEPTION)
@@ -158,14 +162,12 @@ BASE_LOG_MACRO(	UNIT)
 BASE_LOG_MACRO(	DELAYER)
 BASE_LOG_MACRO(	APP_INIT)
 BASE_LOG_MACRO(	SIG)
-#ifdef WIN32
-	#pragma warning(disable:4307)
-	BASE_LOG_MACRO(	CROSS_THREAD)		// for some reason is only one msvc++ 2015 complains about
-	#pragma warning(default:4307)
-#else
-	BASE_LOG_MACRO(	CROSS_THREAD)
-#endif
+BASE_LOG_MACRO(	CROSS_THREAD)
 BASE_LOG_MACRO(	JUCE_LOG)
+
+#ifdef WIN32
+	#pragma warning(default:4307)
+#endif
 
 #undef BASE_LOG_MACRO
 
