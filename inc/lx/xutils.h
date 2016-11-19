@@ -33,8 +33,9 @@ struct EnumClassHash
 
 using EnumHash = EnumClassHash;
 
-int	Soft_stoi(const std::string &s, const int def);
-double	Soft_stod(const std::string &s, const double def);
+int		Soft_stoi(const std::string &s, const int def);
+double		Soft_stod(const std::string &s, const double def);
+std::uint32_t	Soft_stoul(const std::string &s, const std::uint32_t def, const int base = 10);
 
 // timestamp string format
 enum class STAMP_FORMAT : uint32_t

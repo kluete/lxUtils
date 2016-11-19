@@ -85,6 +85,28 @@ int	LX::Soft_stoi(const string &s, const int def)
 	
 	return def;
 }
+//---- Soft (non-spurious) String to 32-bit long conversion -------------------
+
+uint32_t	LX::Soft_stoul(const string &s, const uint32_t def, const int base)
+{
+	try
+	{	
+		if (s.empty())		return def;
+		
+		size_t	dummy = 0;
+		
+		const uint32_t	v = stoul(s, &dummy, base);
+		
+		return v;
+	}
+	catch (std::runtime_error &e)
+	{
+		const char	*what_s = e.what();	// (don't allocate)
+		(void)what_s;
+	}
+	
+	return def;
+}
 
 //==== timestamp ==============================================================
 
