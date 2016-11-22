@@ -319,13 +319,19 @@ string	timestamp_t::str(const STAMP_FORMAT fmt0) const
 		size_t	index = 0;
 		
 		const int64_t		t_us = GetUSecs();
-		const std::time_t	secs = t_us / 1'000'000ul;
+		const std::time_t	secs = t_us / 1'000'000ul;				// TERRIBLE resolution on windows?
 		
 		const bool		utc_f = any(fmt0 & STAMP_FORMAT::UTC);
 		const STAMP_FORMAT	fmt = fmt0 & ~STAMP_FORMAT::UTC;
 		
 		#ifdef WIN32
-			const std::tm	*tm_p = utc_f ? gmtime(&secs) : localtime(&secs);		// NOT thread-safe
+			std::tm	tm_struct;
+			
+			if (utc_f)
+				_gmtime64_s(&tm_struct, &secs/*__time64_t*/);
+			else	_localtime64_s(&tm_struct, &secs);
+
+			const auto	tm_p = &tm_struct;
 		#else
 			std::tm	tm_struct;
 			
