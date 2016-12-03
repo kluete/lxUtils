@@ -277,6 +277,7 @@ public:
 		: LogSlot{},
 		m_Fmt(fmt),
 		m_MinSepElapSecs(min_elap_secs),
+		m_HexLevelFlag((fmt | STAMP_FORMAT::LEVEL) == fmt),
 		m_OFS {fname, ios_base::trunc}
 	{
 		assert(m_OFS && m_OFS.is_open());
@@ -299,13 +300,18 @@ public:
 			m_OFS << sep_s << endl;
 		}
 		
+		m_OFS << stamp.str(m_Fmt);
+
+		if (m_HexLevelFlag)
+			m_OFS << " |" << hex << setw(8) << setfill('0') << (int) level << "|";
+
 		if (thread_id > 0)
 		{
 			// OFF-THREAD
-			m_OFS << stamp.str(m_Fmt) << " _THREAD " << hex << thread_id << " : " << msg << endl;
+			m_OFS << " _THREAD " << hex << thread_id << " : " << msg << endl;
 		}
 		else
-		{	m_OFS << stamp.str(m_Fmt) << " " << msg << endl;
+		{	m_OFS << " " << msg << endl;
 		}
 	}
 	
@@ -313,6 +319,7 @@ private:
 	
 	const STAMP_FORMAT	m_Fmt;
 	const double		m_MinSepElapSecs;
+	const bool		m_HexLevelFlag;
 	mutable mutex		m_Mutex;
 	ofstream		m_OFS;
 	timestamp_t		m_LastStamp;

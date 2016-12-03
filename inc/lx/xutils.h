@@ -45,6 +45,7 @@ enum class STAMP_FORMAT : uint32_t
 	MS		= 1ul << 2,
 	US		= 1ul << 3,
 	UTC		= 1ul << 4,
+	LEVEL		= 1ul << 5,
 	
 	SECOND		= (YMD | HMS),
 	MILLISEC	= (HMS | MS),
