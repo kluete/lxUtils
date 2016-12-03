@@ -17,7 +17,7 @@
 
 #ifdef WIN32
 	#include "Winsock.h"
-	#include <sys/timeb.h>
+	// #include <sys/timeb.h>
 	
 	#ifdef __MINGW64__
 	#endif
@@ -32,8 +32,9 @@ using namespace std;
 using namespace std::chrono;
 using namespace LX;
 
-#if 0
+#if 0	// def WIN32
 
+// WAY TOO SLOW!!!
 typedef ULONGLONG (WINAPI GetTickCount64Proc)(void);
 static GetTickCount64Proc *pt2GetTickCount64;
 static GetTickCount64Proc *pt2RealGetTickCount;
@@ -41,10 +42,11 @@ static GetTickCount64Proc *pt2RealGetTickCount;
 using uint64 = uint64_t;
 using int64 = int64_t;
 
-static uint64 startPerformanceCounter;
-static uint64 startGetTickCount = 0;
+static uint64	startPerformanceCounter;
+static uint64	startGetTickCount = 0;
 // MSVC 6 standard doesn't like division with uint64s
-static double counterPerMicrosecond;
+static double	counterPerMicrosecond;
+static int64_t	s_start_us;
 
 static uint64 UTGetTickCount64()
 {
@@ -60,7 +62,7 @@ static uint64 UTGetTickCount64()
 }
 
 static
-void Time_Initialize()
+void	Time_Initialize(void)
 {
 	HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
 	pt2GetTickCount64 = (GetTickCount64Proc*)GetProcAddress(kernel32, "GetTickCount64");
@@ -72,11 +74,18 @@ void Time_Initialize()
 	QueryPerformanceFrequency((LARGE_INTEGER*)&frequency);
 	counterPerMicrosecond = (double)frequency / 1000000.0f;
 	startGetTickCount = UTGetTickCount64();
+
+	const auto	tp = std::chrono::system_clock::now().time_since_epoch();
+	const auto	elap_ms_no_typ = duration_cast<milliseconds>(tp);
+	const int64_t	elap_ms = elap_ms_no_typ.count();
+	
+	s_start_us = elap_ms * 1000;
 }
 
 static int64 abs64(int64 x) { return x < 0 ? -x : x; }
 
-static uint64 __GetMicroseconds()
+static
+uint64 __GetMicroseconds()
 {
 	static bool time_init = false;
 	if (!time_init) {
@@ -90,17 +99,16 @@ static uint64 __GetMicroseconds()
 	QueryPerformanceCounter((LARGE_INTEGER*) &counter);
 	tick = UTGetTickCount64();
 
-	// unfortunately, QueryPerformanceCounter is not guaranteed
-	// to be monotonic. Make it so.
+	// unfortunately, QueryPerformanceCounter is not guaranteed to be monotonic. Make it so.
 	int64 ret = (int64)(((int64)counter - (int64)startPerformanceCounter) / counterPerMicrosecond);
-	// if the QPC clock leaps more than one second off GetTickCount64()
-	// something is seriously fishy. Adjust QPC to stay monotonic
+	// if the QPC clock leaps more than one second off GetTickCount64() something is seriously fishy. Adjust QPC to stay monotonic
 	int64 tick_diff = tick - startGetTickCount;
-	if (abs64(ret / 100000 - tick_diff / 100) > 10) {
+	if (abs64(ret / 100000 - tick_diff / 100) > 10)
+	{
 		startPerformanceCounter -= (uint64)((int64)(tick_diff * 1000 - ret) * counterPerMicrosecond);
 		ret = (int64)((counter - startPerformanceCounter) / counterPerMicrosecond);
 	}
-	return ret;
+	return s_start_us + ret;
 }
 
 static inline uint64 UTP_GetMilliseconds()
@@ -192,22 +200,19 @@ uint32_t	LX::Soft_stoul(const string &s, const uint32_t def, const int base)
 // static
 int64_t	timestamp_t::NowMicroSecs(void)
 {
+	#ifndef WIN32
 		const auto	tp = stampclock_t::now().time_since_epoch();
 		const auto	elap_us_no_typ = duration_cast<microseconds>(tp);
 		const int64_t	elap_us = elap_us_no_typ.count();
 	
-	#ifndef WIN32
 		return elap_us;
 	#else
-		struct ::__timeb64 timebuffer;  
-		
-		const ::errno_t err = ::_ftime64_s(&timebuffer);
-		assert(!err);
+		// return __GetMicroseconds();		// WAY TOO SLOW!
+		const auto	tp = stampclock_t::now().time_since_epoch();
+		const auto	elap_ms_no_typ = duration_cast<milliseconds>(tp);
+		const int64_t	elap_us = elap_ms_no_typ.count() * 1000ll;
 
-		const int64_t	modulo_us = timebuffer.millitm;
-		
-		const int64_t	us_no_us = (elap_us / 1000ll) * 1000ll;
-		return us_no_us + modulo_us;
+		return elap_us;
 	#endif
 }
 
