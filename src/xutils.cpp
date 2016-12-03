@@ -17,6 +17,7 @@
 
 #ifdef WIN32
 	#include "Winsock.h"
+	#include <sys/timeb.h>
 	
 	#ifdef __MINGW64__
 	#endif
@@ -30,6 +31,84 @@
 using namespace std;
 using namespace std::chrono;
 using namespace LX;
+
+#if 0
+
+typedef ULONGLONG (WINAPI GetTickCount64Proc)(void);
+static GetTickCount64Proc *pt2GetTickCount64;
+static GetTickCount64Proc *pt2RealGetTickCount;
+
+using uint64 = uint64_t;
+using int64 = int64_t;
+
+static uint64 startPerformanceCounter;
+static uint64 startGetTickCount = 0;
+// MSVC 6 standard doesn't like division with uint64s
+static double counterPerMicrosecond;
+
+static uint64 UTGetTickCount64()
+{
+	if (pt2GetTickCount64) {
+		return pt2GetTickCount64();
+	}
+	if (pt2RealGetTickCount) {
+		uint64 v = pt2RealGetTickCount();
+		// fix return value from GetTickCount
+		return (DWORD)v | ((v >> 0x18) & 0xFFFFFFFF00000000);
+	}
+	return (uint64)GetTickCount();
+}
+
+static
+void Time_Initialize()
+{
+	HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+	pt2GetTickCount64 = (GetTickCount64Proc*)GetProcAddress(kernel32, "GetTickCount64");
+	// not a typo. GetTickCount actually returns 64 bits
+	pt2RealGetTickCount = (GetTickCount64Proc*)GetProcAddress(kernel32, "GetTickCount");
+
+	uint64 frequency;
+	QueryPerformanceCounter((LARGE_INTEGER*)&startPerformanceCounter);
+	QueryPerformanceFrequency((LARGE_INTEGER*)&frequency);
+	counterPerMicrosecond = (double)frequency / 1000000.0f;
+	startGetTickCount = UTGetTickCount64();
+}
+
+static int64 abs64(int64 x) { return x < 0 ? -x : x; }
+
+static uint64 __GetMicroseconds()
+{
+	static bool time_init = false;
+	if (!time_init) {
+		time_init = true;
+		Time_Initialize();
+	}
+
+	uint64 counter;
+	uint64 tick;
+
+	QueryPerformanceCounter((LARGE_INTEGER*) &counter);
+	tick = UTGetTickCount64();
+
+	// unfortunately, QueryPerformanceCounter is not guaranteed
+	// to be monotonic. Make it so.
+	int64 ret = (int64)(((int64)counter - (int64)startPerformanceCounter) / counterPerMicrosecond);
+	// if the QPC clock leaps more than one second off GetTickCount64()
+	// something is seriously fishy. Adjust QPC to stay monotonic
+	int64 tick_diff = tick - startGetTickCount;
+	if (abs64(ret / 100000 - tick_diff / 100) > 10) {
+		startPerformanceCounter -= (uint64)((int64)(tick_diff * 1000 - ret) * counterPerMicrosecond);
+		ret = (int64)((counter - startPerformanceCounter) / counterPerMicrosecond);
+	}
+	return ret;
+}
+
+static inline uint64 UTP_GetMilliseconds()
+{
+	return GetTickCount();
+}
+
+#endif // WIN32
 
 //---- Debugger Trap Signal ---------------------------------------------------
 
@@ -113,11 +192,23 @@ uint32_t	LX::Soft_stoul(const string &s, const uint32_t def, const int base)
 // static
 int64_t	timestamp_t::NowMicroSecs(void)
 {
-	const auto	tp = stampclock_t::now().time_since_epoch();
-	const auto	elap_us_no_typ = duration_cast<microseconds>(tp);
-	const int64_t	elap_us = elap_us_no_typ.count();
+		const auto	tp = stampclock_t::now().time_since_epoch();
+		const auto	elap_us_no_typ = duration_cast<microseconds>(tp);
+		const int64_t	elap_us = elap_us_no_typ.count();
 	
-	return elap_us;
+	#ifndef WIN32
+		return elap_us;
+	#else
+		struct ::__timeb64 timebuffer;  
+		
+		const ::errno_t err = ::_ftime64_s(&timebuffer);
+		assert(!err);
+
+		const int64_t	modulo_us = timebuffer.millitm;
+		
+		const int64_t	us_no_us = (elap_us / 1000ll) * 1000ll;
+		return us_no_us + modulo_us;
+	#endif
 }
 
 	timestamp_t::timestamp_t(const int64_t &u_secs)
