@@ -382,7 +382,6 @@ public:
 		: m_NextSlot(next_slot),
 		m_Cnt(0)
 	{
-			
 	}
 	
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_index) override
@@ -397,13 +396,11 @@ public:
 		{
 			if (1 == m_Cnt)
 			{
-				// send older
+				// send stored (current will become new stores
 				m_NextSlot.LogAtLevel(m_Stamp, m_Level, m_Msg, m_ThreadIndex);
-				// send this one
-				m_NextSlot.LogAtLevel(stamp, level, msg, thread_index);
 			}
 			else
-			{	const string	cnt_msg = xsprintf("%s [%4zux] in %s", m_Msg, m_Cnt, m_Stamp.elap_str());
+			{	const string	cnt_msg = xsprintf("%s [%3zux] in %s", m_Msg, m_Cnt, m_Stamp.elap_str());
 			
 				m_NextSlot.LogAtLevel(m_Stamp, m_Level, cnt_msg, m_ThreadIndex);
 			}
