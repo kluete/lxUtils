@@ -29,7 +29,7 @@ using std::mutex;
 using LOG_HASH_T = uint32_t;			// 32-bit is enough?
 
 constexpr
-auto	log_hash(const char* text)		// char[] would be safer?
+auto	log_hash(const char* const text)		// char[] would be safer?
 {
 	return djb2_hash_impl<LOG_HASH_T>(text, 5381);
 }
@@ -64,6 +64,7 @@ public:
 	
 	// shouldn't be here? -- should be MEMBER of log SIGNAL?
 	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC, const double min_elap_secs = 3.0);
+	static LogSlot*	CreateDedup(LogSlot &next_slot);
 
 private:
 

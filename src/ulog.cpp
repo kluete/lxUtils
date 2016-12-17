@@ -375,8 +375,63 @@ private:
 	timestamp_t		m_LastStamp;
 };
 
+class LogDedup : public LogSlot
+{
+public:
+	LogDedup(LogSlot &next_slot)
+		: m_NextSlot(next_slot),
+		m_Cnt(0)
+	{
+			
+	}
+	
+	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_index) override
+	{
+		unique_lock<mutex>	locker(m_Mutex);
+		
+		if ((level == m_Level) && (msg == m_Msg) && (thread_index == m_ThreadIndex))
+		{
+			m_Cnt++;
+		}
+		else
+		{
+			if (1 == m_Cnt)
+			{
+				// send older
+				m_NextSlot.LogAtLevel(m_Stamp, m_Level, m_Msg, m_ThreadIndex);
+				// send this one
+				m_NextSlot.LogAtLevel(stamp, level, msg, thread_index);
+			}
+			else
+			{	const string	cnt_msg = xsprintf("%s [%4zux] in %s", m_Msg, m_Cnt, m_Stamp.elap_str());
+			
+				m_NextSlot.LogAtLevel(m_Stamp, m_Level, cnt_msg, m_ThreadIndex);
+			}
+			
+			// reset
+			m_Stamp = stamp;
+			m_Level = level;
+			m_Msg = msg;
+			m_ThreadIndex = thread_index;
+			m_Cnt = 1;
+		}
+	}
+
+private:
+
+	LogSlot		&m_NextSlot;
+	mutable mutex	m_Mutex;
+	
+	timestamp_t	m_Stamp;
+	LogLevel	m_Level;
+	string		m_Msg;
+	size_t		m_ThreadIndex;
+	size_t		m_Cnt;
+};
+
 //---- instantiate ------------------------------------------------------------
 
+// static
 LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT fmt, const double min_elap_secs)
 {
 	switch (log_t)
@@ -398,5 +453,10 @@ LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_F
 	}
 }
 
+// static
+LogSlot*	LogSlot::CreateDedup(LogSlot &next_slot)
+{
+	return new LogDedup(next_slot);
+}
 
 // nada mas
