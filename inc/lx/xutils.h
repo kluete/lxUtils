@@ -16,11 +16,11 @@ _intype	djb2_hash_impl(const char* text, _intype prev_hash)
 {
 	return ('\0' == text[0]) ? prev_hash : djb2_hash_impl(&text[1], (_intype)(prev_hash * 33ul ^ static_cast<_intype>(text[0])));
 }
-	
+
 #ifndef nil
 	#define	nil	nullptr
 #endif // nil
-	
+
 // hasher for unordered_set/map	(DUMBS DOWN enum to a size_t - is too brutal?)
 struct EnumClassHash
 {
