@@ -169,6 +169,8 @@ BASE_LOG_MACRO(	JUCE_LOG)
 BASE_LOG_MACRO(	LOG_OP)
 BASE_LOG_MACRO(	LOG_DEF)
 
+constexpr LogLevel	LOG_NIL((LogLevel)0);
+
 #ifdef WIN32
 	#pragma warning(default:4307)
 #endif
