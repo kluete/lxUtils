@@ -8,6 +8,8 @@ namespace LX
 // import into namespace
 using std::string;
 
+class Controller;
+
 class ISmartLog
 {
 public:
