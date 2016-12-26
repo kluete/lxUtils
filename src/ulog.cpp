@@ -16,6 +16,13 @@ std::once_flag s_root_log_once_f;
 static
 rootLog*	s_rootLog = nil;
 
+static const
+unordered_set<LogLevel>	s_LogOps
+{
+
+	LOG_DEF,
+};
+
 //==== Log Slot (may have multiple) ===========================================
 
 	LogSlot::LogSlot()
@@ -48,11 +55,20 @@ void	LogSlot::RemoveSignal(void)
 	m_OrgSignal = nil;
 }
 
+// static
+bool	LogSlot::IsLogOp(const LogLevel level)
+{
+	return s_LogOps.count(level);
+}
+
 void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) 
 {
 	if (!m_OrgSignal)	return;		// was already disconnected
 	
-	LogAtLevel(stamp, level, msg, thread_id);
+	if (LogSlot::IsLogOp(level))
+	{	// LogAtLevel(stamp, LOG_OP, "", thread_id);		// could send binary chunk?
+		LogAtLevel(stamp, level, msg, thread_id);
+	}
 }
 
 //==== Log Signal (currently singleton) =======================================

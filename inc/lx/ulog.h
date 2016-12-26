@@ -65,6 +65,7 @@ public:
 	// shouldn't be here? -- should be MEMBER of log SIGNAL?
 	static LogSlot*	Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_FORMAT stamp_fmt = STAMP_FORMAT::MILLISEC, const double min_elap_secs = 3.0);
 	static LogSlot*	CreateDedup(LogSlot &next_slot);
+	static bool	IsLogOp(const LogLevel level);
 
 private:
 
@@ -165,6 +166,8 @@ BASE_LOG_MACRO(	APP_INIT)
 BASE_LOG_MACRO(	SIG)
 BASE_LOG_MACRO(	CROSS_THREAD)
 BASE_LOG_MACRO(	JUCE_LOG)
+BASE_LOG_MACRO(	LOG_OP)
+BASE_LOG_MACRO(	LOG_DEF)
 
 #ifdef WIN32
 	#pragma warning(default:4307)
