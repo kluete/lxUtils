@@ -401,7 +401,7 @@ public:
 				// send stored (current will become new stores
 				m_NextSlot.LogAtLevel(m_Stamp, m_Level, m_Msg, m_ThreadIndex);
 			}
-			else if (m_Cnt != 0);
+			else if (m_Cnt != 0)
 			{	const string	cnt_msg = xsprintf("%s [%3zux] in %s", m_Msg, m_Cnt, m_Stamp.elap_str());
 			
 				m_NextSlot.LogAtLevel(m_Stamp, m_Level, cnt_msg, m_ThreadIndex);
