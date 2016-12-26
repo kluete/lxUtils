@@ -9,16 +9,18 @@ namespace LX
 using std::string;
 
 class Controller;
+class timestamp_t;
+
 
 class ISmartLog
 {
 public:
 	virtual ~ISmartLog() = default;
 	
-	virtual bool	IsSmartLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) = 0;
+	virtual bool	IsOp(const timestamp_t &stamp, const LogLevel &level, const string &msg) = 0;
 	
 	static
-	ISmartLog*	*Create(Controller &controller);
+	ISmartLog*	Create(Controller &controller);
 
 	
 protected:
