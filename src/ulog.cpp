@@ -65,7 +65,7 @@ void	LogSlot::LogAtLevel_LL(const timestamp_t stamp, const LogLevel level, const
 {
 	if (!m_OrgSignal)	return;		// was already disconnected
 	
-	if (LogSlot::IsLogOp(level))
+	// if (LogSlot::IsLogOp(level))
 	{	// LogAtLevel(stamp, LOG_OP, "", thread_id);		// could send binary chunk?
 		LogAtLevel(stamp, level, msg, thread_id);
 	}
@@ -319,7 +319,7 @@ public:
 		m_OFS << stamp.str(m_Fmt);
 
 		if (m_HexLevelFlag)
-			m_OFS << " |" << hex << setw(8) << setfill('0') << (int) level << "|";
+			m_OFS << "|" << hex << setw(8) << setfill('0') << (int) level << "|";
 
 		if (thread_id > 0)
 		{
