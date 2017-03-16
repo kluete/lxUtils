@@ -347,7 +347,7 @@ class CoutLog : public LogSlot
 {
 public:
 	// ctor
-	CoutLog(const string &fname, const STAMP_FORMAT fmt, const double min_elap_secs)
+	CoutLog(const STAMP_FORMAT fmt, const double min_elap_secs)
 		: LogSlot{},
 		m_Fmt(fmt),
 		m_MinSepElapSecs(min_elap_secs),
@@ -458,7 +458,7 @@ LogSlot*	LogSlot::Create(const LOG_TYPE_T log_t, const string &fn, const STAMP_F
 
 		case LOG_TYPE_T::STD_COUT:
 
-			return new CoutLog(fn, fmt, min_elap_secs);
+			return new CoutLog(fmt, min_elap_secs);
 			break;
 		
 		default:
