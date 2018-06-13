@@ -122,6 +122,8 @@ static inline uint64 UTP_GetMilliseconds()
 
 void	LX::xtrap(const char *s)
 {
+    (void)s;
+    
 	#ifdef LOG_SIGNAL_TRAP
 		::kill(0, SIGTRAP);	// (copied from Juce)
 	#endif

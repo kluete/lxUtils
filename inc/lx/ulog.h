@@ -36,7 +36,8 @@ auto	log_hash(const char* const text)		// char[] would be safer?
 
 constexpr
 LOG_HASH_T operator "" _log(const char *s, size_t n)
-{
+{   (void)n;
+
 	return log_hash(s);
 }
 

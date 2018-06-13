@@ -360,6 +360,8 @@ public:
 	// IMP
 	void	LogAtLevel(const timestamp_t stamp, const LogLevel level, const string &msg, const size_t thread_id) override
 	{
+        (void)level;
+        
 		unique_lock<mutex>	locker(m_Mutex);
 		
 		const double	delta_secs = std::min(stamp.delta_secs(m_LastStamp), 80.0);
